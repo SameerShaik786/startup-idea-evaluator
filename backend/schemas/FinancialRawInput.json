@@ -1,0 +1,78 @@
+{
+  "description": "Raw financial data input. Immutable.",
+  "properties": {
+    "schema_version": {
+      "default": "1.0.0",
+      "description": "Schema version",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "created_at": {
+      "description": "Creation timestamp",
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "startup_id": {
+      "description": "Associated startup ID",
+      "format": "uuid",
+      "title": "Startup Id",
+      "type": "string"
+    },
+    "period_start": {
+      "description": "Start of the financial period",
+      "format": "date-time",
+      "title": "Period Start",
+      "type": "string"
+    },
+    "period_end": {
+      "description": "End of the financial period",
+      "format": "date-time",
+      "title": "Period End",
+      "type": "string"
+    },
+    "revenue": {
+      "description": "Total revenue for the period",
+      "title": "Revenue",
+      "type": "number"
+    },
+    "cogs": {
+      "description": "Cost of Goods Sold",
+      "title": "Cogs",
+      "type": "number"
+    },
+    "operating_expenses": {
+      "description": "Total operating expenses",
+      "title": "Operating Expenses",
+      "type": "number"
+    },
+    "cash_balance": {
+      "description": "Current cash balance",
+      "title": "Cash Balance",
+      "type": "number"
+    },
+    "monthly_burn_rate": {
+      "description": "Average monthly burn rate",
+      "title": "Monthly Burn Rate",
+      "type": "number"
+    },
+    "currency": {
+      "default": "USD",
+      "description": "Currency code",
+      "title": "Currency",
+      "type": "string"
+    }
+  },
+  "required": [
+    "startup_id",
+    "period_start",
+    "period_end",
+    "revenue",
+    "cogs",
+    "operating_expenses",
+    "cash_balance",
+    "monthly_burn_rate"
+  ],
+  "title": "FinancialRawInput",
+  "type": "object"
+}

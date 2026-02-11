@@ -1,0 +1,138 @@
+{
+  "$defs": {
+    "Competitor": {
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "strength": {
+          "title": "Strength",
+          "type": "string"
+        },
+        "weakness": {
+          "title": "Weakness",
+          "type": "string"
+        },
+        "market_share_est": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Market Share Est"
+        }
+      },
+      "required": [
+        "name",
+        "strength",
+        "weakness",
+        "market_share_est"
+      ],
+      "title": "Competitor",
+      "type": "object"
+    }
+  },
+  "description": "Output from the Market Research Agent.",
+  "properties": {
+    "schema_version": {
+      "default": "1.0.0",
+      "description": "Schema version",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "created_at": {
+      "description": "Creation timestamp",
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "agent_name": {
+      "description": "Name of the agent that generated this output",
+      "title": "Agent Name",
+      "type": "string"
+    },
+    "agent_version": {
+      "description": "Version of the agent model used",
+      "title": "Agent Version",
+      "type": "string"
+    },
+    "model_name": {
+      "description": "LLM model used (e.g., gpt-4, claude-3)",
+      "title": "Model Name",
+      "type": "string"
+    },
+    "tam": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Total Addressable Market",
+      "title": "Tam"
+    },
+    "sam": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Serviceable Available Market",
+      "title": "Sam"
+    },
+    "som": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Serviceable Obtainable Market",
+      "title": "Som"
+    },
+    "competitors": {
+      "description": "Key competitors",
+      "items": {
+        "$ref": "#/$defs/Competitor"
+      },
+      "title": "Competitors",
+      "type": "array"
+    },
+    "market_trends": {
+      "description": "Relevant market trends",
+      "items": {
+        "type": "string"
+      },
+      "title": "Market Trends",
+      "type": "array"
+    },
+    "market_attractiveness_score": {
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Market Attractiveness Score",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "agent_name",
+    "agent_version",
+    "model_name",
+    "market_attractiveness_score"
+  ],
+  "title": "MarketOutput",
+  "type": "object"
+}

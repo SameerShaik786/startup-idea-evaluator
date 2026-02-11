@@ -1,0 +1,101 @@
+{
+  "$defs": {
+    "RiskFactor": {
+      "properties": {
+        "category": {
+          "description": "Risk category (e.g., Market, Product, Team)",
+          "title": "Category",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description of the risk",
+          "title": "Description",
+          "type": "string"
+        },
+        "impact": {
+          "description": "Potential impact (Low, Medium, High)",
+          "title": "Impact",
+          "type": "string"
+        },
+        "probability": {
+          "description": "Probability (Low, Medium, High)",
+          "title": "Probability",
+          "type": "string"
+        },
+        "mitigation_strategy": {
+          "description": "Suggested mitigation",
+          "title": "Mitigation Strategy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "category",
+        "description",
+        "impact",
+        "probability",
+        "mitigation_strategy"
+      ],
+      "title": "RiskFactor",
+      "type": "object"
+    }
+  },
+  "description": "Output from the Risk Assessment Agent.",
+  "properties": {
+    "schema_version": {
+      "default": "1.0.0",
+      "description": "Schema version",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "created_at": {
+      "description": "Creation timestamp",
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "agent_name": {
+      "description": "Name of the agent that generated this output",
+      "title": "Agent Name",
+      "type": "string"
+    },
+    "agent_version": {
+      "description": "Version of the agent model used",
+      "title": "Agent Version",
+      "type": "string"
+    },
+    "model_name": {
+      "description": "LLM model used (e.g., gpt-4, claude-3)",
+      "title": "Model Name",
+      "type": "string"
+    },
+    "risk_score": {
+      "description": "Overall risk score (0-100, lower is better)",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Risk Score",
+      "type": "integer"
+    },
+    "risk_factors": {
+      "description": "List of identified risks",
+      "items": {
+        "$ref": "#/$defs/RiskFactor"
+      },
+      "title": "Risk Factors",
+      "type": "array"
+    },
+    "executive_risk_summary": {
+      "description": "High-level risk summary",
+      "title": "Executive Risk Summary",
+      "type": "string"
+    }
+  },
+  "required": [
+    "agent_name",
+    "agent_version",
+    "model_name",
+    "risk_score",
+    "executive_risk_summary"
+  ],
+  "title": "RiskOutput",
+  "type": "object"
+}

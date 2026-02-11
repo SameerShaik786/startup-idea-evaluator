@@ -1,0 +1,94 @@
+{
+  "description": "Output from the Financial Analysis Agent.",
+  "properties": {
+    "schema_version": {
+      "default": "1.0.0",
+      "description": "Schema version",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "created_at": {
+      "description": "Creation timestamp",
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "agent_name": {
+      "description": "Name of the agent that generated this output",
+      "title": "Agent Name",
+      "type": "string"
+    },
+    "agent_version": {
+      "description": "Version of the agent model used",
+      "title": "Agent Version",
+      "type": "string"
+    },
+    "model_name": {
+      "description": "LLM model used (e.g., gpt-4, claude-3)",
+      "title": "Model Name",
+      "type": "string"
+    },
+    "gross_margin": {
+      "description": "Gross margin percentage",
+      "title": "Gross Margin",
+      "type": "number"
+    },
+    "net_margin": {
+      "description": "Net margin percentage",
+      "title": "Net Margin",
+      "type": "number"
+    },
+    "runway_months": {
+      "description": "Runway in months",
+      "title": "Runway Months",
+      "type": "number"
+    },
+    "revenue_growth_rate": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Revenue growth rate vs previous period",
+      "title": "Revenue Growth Rate"
+    },
+    "burn_multiple": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Burn multiple (Net Burn / Net New ARR)",
+      "title": "Burn Multiple"
+    },
+    "projections": {
+      "description": "Projected metrics for next 12 months",
+      "title": "Projections",
+      "type": "object"
+    },
+    "analysis_summary": {
+      "description": "Text summary of financial health",
+      "title": "Analysis Summary",
+      "type": "string"
+    }
+  },
+  "required": [
+    "agent_name",
+    "agent_version",
+    "model_name",
+    "gross_margin",
+    "net_margin",
+    "runway_months",
+    "analysis_summary"
+  ],
+  "title": "FinancialMetricsOutput",
+  "type": "object"
+}

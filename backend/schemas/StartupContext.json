@@ -1,0 +1,78 @@
+{
+  "description": "Core startup identity and context.",
+  "properties": {
+    "schema_version": {
+      "default": "1.0.0",
+      "description": "Schema version",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "created_at": {
+      "description": "Creation timestamp",
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "startup_id": {
+      "description": "Unique identifier for the startup",
+      "format": "uuid",
+      "title": "Startup Id",
+      "type": "string"
+    },
+    "name": {
+      "description": "Startup name",
+      "title": "Name",
+      "type": "string"
+    },
+    "industry": {
+      "description": "Primary industry",
+      "title": "Industry",
+      "type": "string"
+    },
+    "stage": {
+      "description": "Current stage (e.g., Pre-Seed, Seed, Series A)",
+      "title": "Stage",
+      "type": "string"
+    },
+    "description": {
+      "description": "Brief description of the startup",
+      "title": "Description",
+      "type": "string"
+    },
+    "website": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Startup website URL",
+      "title": "Website"
+    },
+    "founded_date": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Date founded",
+      "title": "Founded Date"
+    }
+  },
+  "required": [
+    "name",
+    "industry",
+    "stage",
+    "description"
+  ],
+  "title": "StartupContext",
+  "type": "object"
+}
