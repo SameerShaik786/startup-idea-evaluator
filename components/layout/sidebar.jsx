@@ -198,7 +198,7 @@ export function Sidebar({ onSignOut }) {
               )}
             >
               <Avatar className="h-8 w-8 border border-border shrink-0">
-                <AvatarImage src={user?.avatar || "/avatar.png"} alt={user?.name || "User"} />
+                <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.name || "User"} />
                 <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
                   {getInitials(user?.name)}
                 </AvatarFallback>

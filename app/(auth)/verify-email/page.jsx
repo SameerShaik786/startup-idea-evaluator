@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -10,6 +10,14 @@ import { AuthCard, AuthHeader } from "@/components/auth/auth-card";
 import { createClient } from "@/lib/supabase/client";
 
 export default function VerifyEmailPage() {
+    return (
+        <Suspense fallback={<div className="flex justify-center items-center min-h-[400px]"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>}>
+            <VerifyEmailContent />
+        </Suspense>
+    );
+}
+
+function VerifyEmailContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [status, setStatus] = useState("loading"); // loading, success, error

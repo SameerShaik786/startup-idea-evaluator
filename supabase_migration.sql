@@ -154,3 +154,24 @@ CREATE INDEX IF NOT EXISTS idx_investors_user_id ON investors(user_id);
 CREATE INDEX IF NOT EXISTS idx_investor_interests_user_id ON investor_interests(user_id);
 CREATE INDEX IF NOT EXISTS idx_startup_evaluations_user_id ON startup_evaluations(user_id);
 
+
+-- 6. AUTO-CREATE PROFILE ON USER SIGNUP (trigger)
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, role)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(UPPER(NEW.raw_user_meta_data->>'role'), 'INVESTOR')
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();

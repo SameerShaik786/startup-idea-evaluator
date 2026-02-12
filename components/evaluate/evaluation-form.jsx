@@ -199,7 +199,6 @@ function FormCurrencyInput({ name, label, description, error, placeholder, icon:
             label={label}
             description={description}
             required
-            fieldType={FormField.TYPES.EVIDENCE}
             error={error}
         >
             <div className="relative">
@@ -422,7 +421,7 @@ export function EvaluationForm({ onSubmit }) {
                                             <FormField
                                                 label="Startup Name"
                                                 required
-                                                fieldType={FormField.TYPES.EVIDENCE}
+
                                                 error={errors.startupName}
                                             >
                                                 <Input
@@ -436,7 +435,7 @@ export function EvaluationForm({ onSubmit }) {
 
                                             <FormField
                                                 label="Website"
-                                                fieldType={FormField.TYPES.EVIDENCE}
+
                                                 error={errors.website}
                                             >
                                                 <Input
@@ -453,7 +452,7 @@ export function EvaluationForm({ onSubmit }) {
                                             label="Tagline"
                                             description="A one-liner that describes what your startup does"
                                             required
-                                            fieldType={FormField.TYPES.EVIDENCE}
+
                                             error={errors.tagline}
                                             characterCount={formData.tagline.length}
                                             maxCharacters={100}
@@ -471,7 +470,7 @@ export function EvaluationForm({ onSubmit }) {
                                             <FormField
                                                 label="Industry"
                                                 required
-                                                fieldType={FormField.TYPES.EVIDENCE}
+
                                                 error={errors.industry}
                                             >
                                                 <FormSelect
@@ -486,7 +485,7 @@ export function EvaluationForm({ onSubmit }) {
                                             <FormField
                                                 label="Stage"
                                                 required
-                                                fieldType={FormField.TYPES.EVIDENCE}
+
                                                 error={errors.stage}
                                             >
                                                 <FormSelect
@@ -500,7 +499,7 @@ export function EvaluationForm({ onSubmit }) {
 
                                             <FormField
                                                 label="Founded Date"
-                                                fieldType={FormField.TYPES.EVIDENCE}
+
                                                 error={errors.foundedDate}
                                             >
                                                 <Input
@@ -522,7 +521,7 @@ export function EvaluationForm({ onSubmit }) {
                                             label="Problem Description"
                                             description="Describe the core problem your startup is solving in detail"
                                             required
-                                            fieldType={FormField.TYPES.OPINION}
+
                                             error={errors.problemDescription}
                                             characterCount={formData.problemDescription.length}
                                             maxCharacters={1000}
@@ -540,7 +539,7 @@ export function EvaluationForm({ onSubmit }) {
                                             label="Target Customer Persona"
                                             description="Who is your ideal customer? Be specific about demographics and psychographics"
                                             required
-                                            fieldType={FormField.TYPES.OPINION}
+
                                             error={errors.targetCustomerPersona}
                                         >
                                             <FormTextarea
@@ -556,7 +555,7 @@ export function EvaluationForm({ onSubmit }) {
                                             label="Current Alternatives"
                                             description="What are customers using today to solve this problem?"
                                             required
-                                            fieldType={FormField.TYPES.EVIDENCE}
+
                                             error={errors.currentAlternatives}
                                         >
                                             <FormTextarea
@@ -572,7 +571,7 @@ export function EvaluationForm({ onSubmit }) {
                                             label="Why Now"
                                             description="What has changed that makes this the right time for your solution?"
                                             required
-                                            fieldType={FormField.TYPES.OPINION}
+
                                             error={errors.whyNow}
                                         >
                                             <FormTextarea
@@ -607,7 +606,7 @@ export function EvaluationForm({ onSubmit }) {
                                                 label="Period Start"
                                                 description="Start of reporting period"
                                                 required
-                                                fieldType={FormField.TYPES.EVIDENCE}
+
                                                 error={errors.periodStart}
                                             >
                                                 <Input
@@ -623,7 +622,7 @@ export function EvaluationForm({ onSubmit }) {
                                                 label="Period End"
                                                 description="End of reporting period"
                                                 required
-                                                fieldType={FormField.TYPES.EVIDENCE}
+
                                                 error={errors.periodEnd}
                                             >
                                                 <Input
@@ -638,7 +637,7 @@ export function EvaluationForm({ onSubmit }) {
                                             <FormField
                                                 label="Currency"
                                                 required
-                                                fieldType={FormField.TYPES.EVIDENCE}
+
                                                 error={errors.currency}
                                             >
                                                 <FormSelect
@@ -717,7 +716,7 @@ export function EvaluationForm({ onSubmit }) {
                                             label="Product Description"
                                             description="Describe your product and how it solves the problem"
                                             required
-                                            fieldType={FormField.TYPES.EVIDENCE}
+
                                             error={errors.productDescription}
                                         >
                                             <FormTextarea
@@ -732,7 +731,7 @@ export function EvaluationForm({ onSubmit }) {
                                         <FormField
                                             label="Demo URL"
                                             description="Link to a demo, video walkthrough, or live product"
-                                            fieldType={FormField.TYPES.EVIDENCE}
+
                                             error={errors.demoUrl}
                                         >
                                             <Input
@@ -747,7 +746,7 @@ export function EvaluationForm({ onSubmit }) {
                                         <div className="grid md:grid-cols-2 gap-6">
                                             <FormField
                                                 label="Users / Customers"
-                                                fieldType={FormField.TYPES.EVIDENCE}
+
                                                 error={errors.usersCount}
                                             >
                                                 <Input
@@ -762,7 +761,7 @@ export function EvaluationForm({ onSubmit }) {
 
                                             <FormField
                                                 label="Retention Rate"
-                                                fieldType={FormField.TYPES.EVIDENCE}
+
                                                 error={errors.retentionMetrics}
                                             >
                                                 <Input
@@ -784,7 +783,7 @@ export function EvaluationForm({ onSubmit }) {
                                             label="Competitors"
                                             description="List your main competitors (direct and indirect)"
                                             required
-                                            fieldType={FormField.TYPES.EVIDENCE}
+
                                             error={errors.competitors}
                                         >
                                             <FormTextarea
@@ -800,7 +799,7 @@ export function EvaluationForm({ onSubmit }) {
                                             label="Differentiation"
                                             description="What makes you fundamentally different from competitors?"
                                             required
-                                            fieldType={FormField.TYPES.OPINION}
+
                                             error={errors.differentiation}
                                         >
                                             <FormTextarea
@@ -816,7 +815,7 @@ export function EvaluationForm({ onSubmit }) {
                                             label="Why You Win"
                                             description="Why will you beat the competition? What's your unfair advantage?"
                                             required
-                                            fieldType={FormField.TYPES.OPINION}
+
                                             error={errors.whyYouWin}
                                         >
                                             <FormTextarea
@@ -837,7 +836,7 @@ export function EvaluationForm({ onSubmit }) {
                                             label="Founder Background"
                                             description="Tell us about the founding team's experience and qualifications"
                                             required
-                                            fieldType={FormField.TYPES.EVIDENCE}
+
                                             error={errors.founderBackground}
                                         >
                                             <FormTextarea
@@ -853,7 +852,7 @@ export function EvaluationForm({ onSubmit }) {
                                             label="Domain Experience"
                                             description="What specific experience does the team have in this industry?"
                                             required
-                                            fieldType={FormField.TYPES.EVIDENCE}
+
                                             error={errors.domainExperience}
                                         >
                                             <FormTextarea
@@ -868,7 +867,7 @@ export function EvaluationForm({ onSubmit }) {
                                         <FormField
                                             label="Past Wins & Failures"
                                             description="Share relevant wins or lessons learned from past ventures (optional)"
-                                            fieldType={FormField.TYPES.EVIDENCE}
+
                                             error={errors.pastWinsFailures}
                                         >
                                             <FormTextarea

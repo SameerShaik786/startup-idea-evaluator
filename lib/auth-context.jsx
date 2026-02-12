@@ -47,6 +47,11 @@ export function AuthProvider({ children }) {
 
                 if (session?.user) {
                     extractSessionInfo(session);
+
+                    // Ensure profile exists on sign-in
+                    if (event === "SIGNED_IN") {
+                        await ensureProfile(supabase, session.user);
+                    }
                 } else {
                     setSessionInfo(null);
                 }
@@ -95,7 +100,7 @@ export function AuthProvider({ children }) {
                 password,
                 options: {
                     data: metadata,
-                    emailRedirectTo: `${window.location.origin}/verify-email`,
+                    emailRedirectTo: `${window.location.origin}/auth/callback`,
                 },
             });
 
@@ -131,7 +136,7 @@ export function AuthProvider({ children }) {
             const { data, error } = await supabase.auth.signInWithOtp({
                 email,
                 options: {
-                    emailRedirectTo: `${window.location.origin}/`,
+                    emailRedirectTo: `${window.location.origin}/auth/callback`,
                 },
             });
 
@@ -150,7 +155,7 @@ export function AuthProvider({ children }) {
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                    redirectTo: `${window.location.origin}/`,
+                    redirectTo: `${window.location.origin}/auth/callback`,
                 },
             });
 
@@ -248,6 +253,30 @@ export function useAuth() {
         throw new Error("useAuth must be used within an AuthProvider");
     }
     return context;
+}
+
+// Ensure a profile row exists for the given user
+async function ensureProfile(supabase, user) {
+    try {
+        const { data: existing } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("id", user.id)
+            .single();
+
+        if (!existing) {
+            const role = user.user_metadata?.role || "INVESTOR";
+            await supabase.from("profiles").insert({
+                id: user.id,
+                email: user.email,
+                full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+                avatar_url: user.user_metadata?.avatar_url || null,
+                role: role.toUpperCase(),
+            });
+        }
+    } catch (err) {
+        console.error("Error ensuring profile:", err);
+    }
 }
 
 // Helper functions

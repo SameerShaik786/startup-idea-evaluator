@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 
 /* ── helpers ──────────────────────────────────────────── */
 function getScoreColor(score) {
@@ -112,18 +113,29 @@ function ReportCard({ report, index }) {
 
 /* ── page ─────────────────────────────────────────────── */
 export default function ReportsPage() {
+    const { user } = useAuth();
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         async function fetchReports() {
+            if (!user?.id) return;
             try {
                 const supabase = createClient();
-                const { data, error } = await supabase
+                const userRole = (user?.user_metadata?.role || "investor").toLowerCase();
+
+                let query = supabase
                     .from("startup_evaluations")
                     .select("*")
                     .order("created_at", { ascending: false });
+
+                // Founders only see their own reports; investors see ALL
+                if (userRole === "founder") {
+                    query = query.eq("user_id", user.id);
+                }
+
+                const { data, error } = await query;
 
                 if (error) throw error;
 
@@ -170,8 +182,8 @@ export default function ReportsPage() {
                 setLoading(false);
             }
         }
-        fetchReports();
-    }, []);
+        if (user !== null) fetchReports();
+    }, [user]);
 
     return (
         <div className="max-w-6xl mx-auto">

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Search, Loader2, ArrowUpRight, X, Heart } from "lucide-react";
+import { Search, Loader2, ArrowUpRight, X, Heart, ExternalLink } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -95,9 +95,23 @@ function StartupCard({ startup, index, isInvestor, isInterested, onToggleInteres
                     </div>
 
                     {/* tagline — flex-1 to push footer down */}
-                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 mb-4 flex-1">
+                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 mb-3 flex-1">
                         {startup.tagline || "No description available."}
                     </p>
+
+                    {/* website link */}
+                    {startup.website && (
+                        <a
+                            href={startup.website.startsWith("http") ? startup.website : `https://${startup.website}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex items-center gap-1.5 text-xs text-primary/70 hover:text-primary transition-colors mb-3 truncate"
+                        >
+                            <ExternalLink className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{startup.website.replace(/^https?:\/\//, "")}</span>
+                        </a>
+                    )}
 
                     {/* bottom row — raise amount · interest button */}
                     <div className="flex items-center justify-between text-sm pt-3 border-t border-border/50">
