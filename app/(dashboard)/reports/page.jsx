@@ -2,140 +2,115 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-    FileText,
-    Download,
-    Share2,
-    Calendar,
-    TrendingUp,
-    BarChart3,
-    PieChart,
-    Eye,
-    MoreVertical,
-    AlertCircle
-} from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { FileText, Loader2, ArrowUpRight, Clock, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-function getReportTypeStyles(type) {
-    switch (type) {
-        case "portfolio":
-            return "bg-primary/10 text-primary";
-        case "startup":
-            return "bg-blue-500/10 text-blue-500";
-        case "market":
-            return "bg-green-500/10 text-green-500";
-        default:
-            return "bg-muted text-muted-foreground";
-    }
+/* ── helpers ──────────────────────────────────────────── */
+function getScoreColor(score) {
+    if (score >= 80) return "text-emerald-400";
+    if (score >= 60) return "text-amber-400";
+    return "text-red-400";
 }
 
+function getScoreBg(score) {
+    if (score >= 80) return "bg-emerald-500/10 border-emerald-500/20";
+    if (score >= 60) return "bg-amber-500/10 border-amber-500/20";
+    return "bg-red-500/10 border-red-500/20";
+}
+
+function Initials({ name }) {
+    const letters = (name || "S")
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+
+    return (
+        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/10 border border-border flex items-center justify-center select-none shrink-0">
+            <span className="text-sm font-semibold text-primary">{letters}</span>
+        </div>
+    );
+}
+
+/* ── report card ─────────────────────────────────────── */
 function ReportCard({ report, index }) {
-    // Default to 'startup' type for now as that's what we're saving
-    const type = report.type || "startup";
-    const Icon = type === "portfolio" ? PieChart : type === "market" ? TrendingUp : BarChart3;
+    const score = Math.round(report.score || 0);
+    const components = Object.entries(report.component_scores || {}).slice(0, 4);
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.05 }}
+            transition={{ duration: 0.35, delay: index * 0.04, ease: [0.25, 0.1, 0.25, 1] }}
+            className="h-full"
         >
-            <Card className="glass-card hover:glow-sm transition-all duration-300 group">
-                <CardContent className="p-5">
-                    <div className="flex items-start gap-4">
-                        <div
-                            className={cn(
-                                "p-3 rounded-lg transition-colors",
-                                getReportTypeStyles(type)
-                            )}
-                        >
-                            <Icon className="h-5 w-5" />
-                        </div>
-
+            <Link
+                href={`/reports/${report.id}`}
+                className="group block h-full"
+            >
+                <div className="flex flex-col h-full p-6 rounded-2xl border border-border hover:border-primary/30 bg-transparent transition-all duration-200">
+                    {/* top — logo + name + score */}
+                    <div className="flex items-start gap-4 mb-3">
+                        <Initials name={report.title} />
                         <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                                <div>
-                                    <h3 className="font-semibold group-hover:text-primary transition-colors line-clamp-1">
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                    <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors truncate">
                                         {report.title}
                                     </h3>
-                                    <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">
-                                        {report.description || `Evaluation for ${report.title}`}
-                                    </p>
-                                </div>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <MoreVertical className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem asChild>
-                                            <Link href={`/reports/${report.id}`}>
-                                                <Eye className="h-4 w-4 mr-2" />
-                                                View Report
-                                            </Link>
-                                        </DropdownMenuItem>
-                                        {/* 
-                                        <DropdownMenuItem>
-                                            <Download className="h-4 w-4 mr-2" />
-                                            Download PDF
-                                        </DropdownMenuItem> 
-                                        */}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-
-                            <div className="flex items-center gap-3 mt-4 flex-wrap">
-                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                    <Calendar className="h-3.5 w-3.5" />
-                                    {new Date(report.created_at).toLocaleDateString()}
-                                </div>
-
-                                {report.score !== undefined && (
-                                    <Badge
-                                        variant="outline"
-                                        className={cn(
-                                            "text-xs font-semibold",
-                                            report.score >= 80
-                                                ? "bg-green-500/15 text-green-500 border-green-500/30"
-                                                : report.score >= 60
-                                                    ? "bg-yellow-500/15 text-yellow-500 border-yellow-500/30"
-                                                    : "bg-red-500/15 text-red-500 border-red-500/30"
+                                    <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                                        <Clock className="h-3.5 w-3.5" />
+                                        <span>{new Date(report.created_at).toLocaleDateString()}</span>
+                                        {report.risk_label && (
+                                            <>
+                                                <span className="text-border">·</span>
+                                                <span className="capitalize">{report.risk_label.replace("_", " ")}</span>
+                                            </>
                                         )}
-                                    >
-                                        Score: {Math.round(report.score)}
-                                    </Badge>
-                                )}
-
-                                {report.risk_label && (
-                                    <Badge variant="secondary" className="text-xs">
-                                        {report.risk_label.replace("_", " ")}
-                                    </Badge>
-                                )}
+                                    </div>
+                                </div>
+                                <div className={cn(
+                                    "flex items-center justify-center h-12 w-12 rounded-xl border shrink-0",
+                                    getScoreBg(score)
+                                )}>
+                                    <span className={cn("text-lg font-bold tabular-nums", getScoreColor(score))}>
+                                        {score}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+
+                    {/* description */}
+                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 mb-4 flex-1">
+                        {report.description}
+                    </p>
+
+                    {/* component scores bar */}
+                    {components.length > 0 && (
+                        <div className="flex items-center gap-3 pt-3 border-t border-border/50">
+                            {components.map(([key, value]) => (
+                                <div key={key} className="flex items-center gap-1.5 text-sm">
+                                    <span className="text-muted-foreground capitalize">{key}</span>
+                                    <span className={cn("font-semibold tabular-nums", getScoreColor(Math.round(value)))}>
+                                        {Math.round(value)}
+                                    </span>
+                                </div>
+                            ))}
+                            <ArrowUpRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-auto shrink-0" />
+                        </div>
+                    )}
+                </div>
+            </Link>
         </motion.div>
     );
 }
 
+/* ── page ─────────────────────────────────────────────── */
 export default function ReportsPage() {
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -145,7 +120,6 @@ export default function ReportsPage() {
         async function fetchReports() {
             try {
                 const supabase = createClient();
-                // Fetch from the simplified persistence table first
                 const { data, error } = await supabase
                     .from("startup_evaluations")
                     .select("*")
@@ -153,43 +127,38 @@ export default function ReportsPage() {
 
                 if (error) throw error;
 
-                // Transform data to match UI needs
-                const formattedReports = (data || []).map(item => {
-                    // Try to extract name from the report_json if possible, or use ID
-                    let title = item.startup_id;
-                    let description = "Startup Evaluation";
+                const formattedReports = (data || []).map((item) => {
+                    const reportJson = item.report_json || {};
+                    let title =
+                        reportJson.startup_name ||
+                        item.startup_id ||
+                        "Unknown Startup";
+                    let description = "No summary available.";
 
-                    if (item.report_json) {
-                        try {
-                            const json = typeof item.report_json === 'string'
-                                ? JSON.parse(item.report_json)
-                                : item.report_json;
-                            if (json.startup_name) title = json.startup_name;
-                            if (json.summary) {
-                                if (typeof json.summary === 'string') {
-                                    description = json.summary;
-                                } else if (typeof json.summary === 'object') {
-                                    // Handle the structured summary from backend
-                                    if (json.summary.agents_failed > 0) {
-                                        description = `Evaluation complete with ${json.summary.agents_failed} agent errors. Score: ${json.summary.final_score}`;
-                                    } else {
-                                        description = `Evaluation complete. Score: ${json.summary.final_score}`;
-                                    }
-                                }
-                            }
-                        } catch (e) {
-                            // ignore parse error
-                        }
+                    const summary = reportJson.summary;
+                    if (typeof summary === "string") {
+                        description = summary;
+                    } else if (summary && typeof summary === "object") {
+                        description = `Evaluation complete. Final score: ${Math.round(
+                            (summary.final_score || item.final_score) * 100
+                        )}%`;
                     }
 
+                    const scaleScore = (s) =>
+                        s <= 1 && s > 0 ? s * 100 : s;
+
                     return {
-                        id: item.startup_id, // This fits the route /reports/[id] which expects startup_id
-                        title: title,
-                        description: description,
-                        score: item.final_score,
+                        id: item.startup_id,
+                        title,
+                        description,
+                        score: scaleScore(item.final_score || 0),
                         risk_label: item.risk_label,
                         created_at: item.created_at,
-                        type: "startup"
+                        component_scores: Object.fromEntries(
+                            Object.entries(
+                                reportJson.component_scores || {}
+                            ).map(([k, v]) => [k, scaleScore(v)])
+                        ),
                     };
                 });
 
@@ -201,59 +170,65 @@ export default function ReportsPage() {
                 setLoading(false);
             }
         }
-
         fetchReports();
     }, []);
 
     return (
-        <div className="space-y-6">
-            {/* Page Header */}
+        <div className="max-w-6xl mx-auto">
+            {/* ── header ──────────────────────────────── */}
             <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="flex items-center justify-between"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex items-center justify-between mb-10"
             >
                 <div>
-                    <h1 className="text-2xl font-semibold tracking-tight">Reports</h1>
-                    <p className="text-muted-foreground mt-1">
-                        View and manage your generated reports
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        Reports
+                    </h1>
+                    <p className="text-base text-muted-foreground mt-2">
+                        Review your AI-generated evaluation reports.
                     </p>
                 </div>
-                <Button className="glow-sm" asChild>
+                <Button size="sm" asChild>
                     <Link href="/evaluate">
-                        <FileText className="h-4 w-4 mr-2" />
                         New Evaluation
                     </Link>
                 </Button>
             </motion.div>
 
-            {/* Reports List */}
-            <div className="space-y-4">
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                        <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-                        <p>Loading reports...</p>
-                    </div>
-                ) : error ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-red-500 bg-red-500/5 rounded-xl border border-red-500/10">
-                        <AlertCircle className="h-8 w-8 mb-2" />
-                        <p>{error}</p>
-                    </div>
-                ) : reports.length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground bg-muted/30 rounded-xl border border-dashed border-border">
-                        <FileText className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                        <p>No reports found. Submit your first evaluation!</p>
-                        <Button variant="outline" className="mt-4" asChild>
-                            <Link href="/evaluate">Start Evaluation</Link>
-                        </Button>
-                    </div>
-                ) : (
-                    reports.map((report, index) => (
-                        <ReportCard key={report.id + index} report={report} index={index} />
-                    ))
-                )}
-            </div>
+            {/* ── content ─────────────────────────────── */}
+            {loading ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                    <Loader2 className="h-7 w-7 animate-spin text-primary mb-4" />
+                    <p className="text-base text-muted-foreground">
+                        Loading reports…
+                    </p>
+                </div>
+            ) : error ? (
+                <div className="py-16 text-center">
+                    <p className="text-base text-red-400">{error}</p>
+                </div>
+            ) : reports.length === 0 ? (
+                <div className="py-20 text-center">
+                    <p className="text-base text-muted-foreground mb-4">
+                        No reports yet. Submit your first evaluation to get
+                        started.
+                    </p>
+                    <Button variant="outline" size="sm" asChild>
+                        <Link href="/evaluate">Start Evaluation</Link>
+                    </Button>
+                </div>
+            ) : (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {reports.map((report, index) => (
+                        <ReportCard
+                            key={report.id + index}
+                            report={report}
+                            index={index}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

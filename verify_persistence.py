@@ -22,7 +22,9 @@ async def check_evaluations():
         if response.data:
             print(f"Found {len(response.data)} evaluations in the database.")
             for eval in response.data[:3]:
-                print(f"   - ID: {eval.get('startup_id')}, Score: {eval.get('final_score')}, Created At: {eval.get('created_at')}")
+                report_json = eval.get('report_json')
+                report_snippet = str(report_json)[:100] + "..." if report_json else "None"
+                print(f"   - ID: {eval.get('startup_id')}, Score: {eval.get('final_score')}, JSON: {report_snippet}")
         else:
             print("No evaluations found in the database yet.")
             

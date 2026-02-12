@@ -68,6 +68,7 @@
   /* Surfaces */
   --card: #111826;
   --card-foreground: #E6EDF3;
+  --surface-card: #131B2B;
   --popover: #16202B;
   --popover-foreground: #E6EDF3;
 
@@ -126,6 +127,7 @@
   /* Surfaces */
   --card: #FFFFFF;
   --card-foreground: #0F172A;
+  --surface-card: #F8FAFC;
   --popover: #FFFFFF;
   --popover-foreground: #0F172A;
 

@@ -115,6 +115,7 @@ class InvestorFitOutput(AgentOutputBase):
     recommended_stage: str = Field(..., description="Funding stage (e.g., Pre-Seed, Seed, Series A)")
     ticket_size_range: str = Field(..., description="Recommended ticket size range (e.g., $100k-$500k)")
     reasoning: str = Field(..., description="Reasoning for the recommendation")
+    domain_analysis: Optional[List[Dict[str, str]]] = Field(default_factory=list, description="Breakdown of analysis across all 7 domains")
 
 class ReportSection(BaseModel):
     title: str

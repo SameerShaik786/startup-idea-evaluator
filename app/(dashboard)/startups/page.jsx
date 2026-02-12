@@ -1,332 +1,242 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
     Search,
-    Filter,
-    Grid3x3,
-    List,
-    MoreVertical,
-    TrendingUp,
-    TrendingDown,
-    ExternalLink,
-    Trash2,
-    Edit,
     Clock,
+    Loader2,
+    ArrowUpRight,
+    X,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
+import { createClient } from "@/lib/supabase/client";
 
-// Sample startups data
-const startups = [
-    {
-        id: 1,
-        name: "TechFlow AI",
-        description: "AI-powered workflow automation for enterprises",
-        initials: "TF",
-        score: 87,
-        previousScore: 82,
-        stage: "Series A",
-        sector: "AI/ML",
-        lastEvaluated: "2 hours ago",
-        founded: "2023",
-    },
-    {
-        id: 2,
-        name: "DataVault Pro",
-        description: "Enterprise data security and compliance platform",
-        initials: "DV",
-        score: 72,
-        previousScore: 75,
-        stage: "Seed",
-        sector: "Security",
-        lastEvaluated: "5 hours ago",
-        founded: "2024",
-    },
-    {
-        id: 3,
-        name: "MetaLayer",
-        description: "Next-gen infrastructure layer for Web3",
-        initials: "ML",
-        score: 91,
-        previousScore: 88,
-        stage: "Series B",
-        sector: "Web3",
-        lastEvaluated: "2 days ago",
-        founded: "2022",
-    },
-    {
-        id: 4,
-        name: "CloudSync",
-        description: "Seamless multi-cloud synchronization",
-        initials: "CS",
-        score: 68,
-        previousScore: 68,
-        stage: "Seed",
-        sector: "Cloud",
-        lastEvaluated: "3 days ago",
-        founded: "2024",
-    },
-    {
-        id: 5,
-        name: "QuantumLeap",
-        description: "Quantum computing solutions for finance",
-        initials: "QL",
-        score: 94,
-        previousScore: 90,
-        stage: "Series A",
-        sector: "Quantum",
-        lastEvaluated: "1 week ago",
-        founded: "2023",
-    },
-    {
-        id: 6,
-        name: "BioNex",
-        description: "AI-driven drug discovery platform",
-        initials: "BN",
-        score: 79,
-        previousScore: 76,
-        stage: "Series A",
-        sector: "Biotech",
-        lastEvaluated: "1 week ago",
-        founded: "2022",
-    },
-];
-
+/* ── helpers ──────────────────────────────────────────── */
 function getScoreColor(score) {
-    if (score >= 80) return "bg-green-500/15 text-green-500 border-green-500/30";
-    if (score >= 60) return "bg-yellow-500/15 text-yellow-500 border-yellow-500/30";
-    return "bg-red-500/15 text-red-500 border-red-500/30";
+    if (score >= 80) return "text-emerald-400";
+    if (score >= 60) return "text-amber-400";
+    return "text-red-400";
 }
 
-function getScoreTrend(current, previous) {
-    if (current > previous) return { icon: TrendingUp, color: "text-green-500" };
-    if (current < previous) return { icon: TrendingDown, color: "text-red-500" };
-    return null;
-}
-
-function StartupCard({ startup, index, viewMode }) {
-    const trend = getScoreTrend(startup.score, startup.previousScore);
-    const TrendIcon = trend?.icon;
+function Initials({ name }) {
+    const letters = (name || "S")
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
 
     return (
+        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/10 border border-border flex items-center justify-center select-none shrink-0">
+            <span className="text-sm font-semibold text-primary">{letters}</span>
+        </div>
+    );
+}
+
+/* ── startup card ─────────────────────────────────────── */
+function StartupCard({ startup, index }) {
+    return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.05 }}
+            transition={{ duration: 0.35, delay: index * 0.04, ease: [0.25, 0.1, 0.25, 1] }}
+            className="h-full"
         >
-            <Card className="glass-card hover:glow-sm transition-all duration-300 group cursor-pointer h-full">
-                <CardContent className={cn("p-5 h-full", viewMode === "list" ? "flex items-center gap-6" : "flex flex-col")}>
-                    <div className={cn("flex items-start gap-4", viewMode === "list" && "flex-1")}>
-                        <Avatar className="h-12 w-12 border border-border">
-                            <AvatarImage src={startup.logo} alt={startup.name} />
-                            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                                {startup.initials}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                                <div>
-                                    <h3 className="font-semibold group-hover:text-primary transition-colors">
-                                        {startup.name}
-                                    </h3>
-                                    <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
-                                        {startup.description}
-                                    </p>
-                                </div>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <MoreVertical className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem>
-                                            <ExternalLink className="h-4 w-4 mr-2" />
-                                            View Details
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem>
-                                            <Edit className="h-4 w-4 mr-2" />
-                                            Edit
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem className="text-destructive">
-                                            <Trash2 className="h-4 w-4 mr-2" />
-                                            Delete
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+            <Link href={`/reports/${startup.id}`} className="block group h-full">
+                <div className="flex flex-col h-full p-6 rounded-2xl border border-border hover:border-primary/30 bg-transparent transition-all duration-200">
+                    {/* top row */}
+                    <div className="flex items-start gap-4 mb-3">
+                        <Initials name={startup.name} />
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-2">
+                                <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors truncate">
+                                    {startup.name}
+                                </h3>
+                                <ArrowUpRight className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                             </div>
 
-                            {viewMode === "grid" && (
-                                <div className="flex flex-wrap gap-2 mt-3">
-                                    <Badge variant="secondary" className="text-xs">
-                                        {startup.sector}
-                                    </Badge>
-                                    <Badge variant="outline" className="text-xs">
-                                        {startup.stage}
-                                    </Badge>
-                                </div>
-                            )}
+                            {/* meta */}
+                            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                                {startup.sector && <span>{startup.sector}</span>}
+                                {startup.sector && startup.stage && <span className="text-border">·</span>}
+                                {startup.stage && <span>{startup.stage}</span>}
+                            </div>
                         </div>
                     </div>
 
-                    {viewMode === "list" && (
-                        <>
-                            <div className="flex gap-2">
-                                <Badge variant="secondary" className="text-xs">
-                                    {startup.sector}
-                                </Badge>
-                                <Badge variant="outline" className="text-xs">
-                                    {startup.stage}
-                                </Badge>
-                            </div>
-                            <div className="text-sm text-muted-foreground flex items-center gap-1">
-                                <Clock className="h-3.5 w-3.5" />
-                                {startup.lastEvaluated}
-                            </div>
-                        </>
-                    )}
+                    {/* description — flex-1 pushes bottom row down */}
+                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 mb-4 flex-1">
+                        {startup.description}
+                    </p>
 
-                    <div className={cn("flex items-center justify-between", viewMode === "grid" && "mt-auto pt-4 border-t border-border/50")}>
-                        {viewMode === "grid" && (
-                            <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {startup.lastEvaluated}
-                            </div>
+                    {/* bottom row — date · score */}
+                    <div className="flex items-center justify-between text-sm pt-3 border-t border-border/50">
+                        <span className="text-muted-foreground flex items-center gap-1.5">
+                            <Clock className="h-3.5 w-3.5" />
+                            {startup.lastEvaluated}
+                        </span>
+                        {startup.score > 0 && (
+                            <span className={cn("text-lg font-bold tabular-nums", getScoreColor(startup.score))}>
+                                {Math.round(startup.score)}
+                            </span>
                         )}
-                        <div className="flex items-center gap-2">
-                            {trend && <TrendIcon className={cn("h-4 w-4", trend.color)} />}
-                            <Badge
-                                variant="outline"
-                                className={cn("font-bold text-sm px-3", getScoreColor(startup.score))}
-                            >
-                                {startup.score}
-                            </Badge>
-                        </div>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </Link>
         </motion.div>
     );
 }
 
+/* ── page ─────────────────────────────────────────────── */
 export default function StartupsPage() {
     const { user } = useAuth();
+    const [evaluations, setEvaluations] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
+
+    useEffect(() => {
+        async function fetchStartups() {
+            try {
+                const supabase = createClient();
+                let query = supabase
+                    .from("startup_evaluations")
+                    .select("*")
+                    .order("created_at", { ascending: false });
+
+                // Founders only see their own evaluations
+                if (user?.id) {
+                    query = query.eq("user_id", user.id);
+                }
+
+                const { data, error } = await query;
+
+                if (error) throw error;
+                setEvaluations(data || []);
+            } catch (err) {
+                console.error("Error fetching startups:", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        if (user !== null) fetchStartups();
+    }, [user]);
+
     const role = user?.user_metadata?.role || "investor";
     const isFounder = role === "founder";
 
-    const [viewMode, setViewMode] = useState("grid");
-    const [searchQuery, setSearchQuery] = useState("");
+    // Group evaluations by startup_id and take the latest
+    const uniqueStartups = useMemo(() => {
+        const startupMap = new Map();
+        evaluations.forEach(item => {
+            if (!startupMap.has(item.startup_id)) {
+                const reportJson = item.report_json || {};
+                const name = reportJson.startup_name || item.startup_id || "Unknown";
+                const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
-    // If founder, only show their startup (mocked as the first one)
-    const displayedStartups = isFounder ? [startups[0]] : startups;
+                let summary = "No summary available.";
+                if (typeof reportJson.summary === 'string') {
+                    summary = reportJson.summary;
+                } else if (reportJson.summary && typeof reportJson.summary === 'object') {
+                    summary = `Evaluation complete. Final score: ${Math.round(reportJson.summary.final_score)}`;
+                }
 
-    const filteredStartups = displayedStartups.filter(
-        (startup) =>
-            startup.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            startup.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            startup.sector.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+                startupMap.set(item.startup_id, {
+                    id: item.startup_id,
+                    name: name,
+                    description: summary,
+                    initials: initials,
+                    score: item.final_score || 0,
+                    sector: reportJson.metadata?.industry || "Tech",
+                    stage: reportJson.metadata?.stage || "Early",
+                    lastEvaluated: new Date(item.created_at).toLocaleDateString(),
+                });
+            }
+        });
+        return Array.from(startupMap.values());
+    }, [evaluations]);
+
+    const filteredStartups = useMemo(() => {
+        if (!searchQuery.trim()) return uniqueStartups;
+        const q = searchQuery.toLowerCase();
+        return uniqueStartups.filter(
+            (startup) =>
+                startup.name.toLowerCase().includes(q) ||
+                startup.description.toLowerCase().includes(q) ||
+                startup.sector.toLowerCase().includes(q)
+        );
+    }, [uniqueStartups, searchQuery]);
+
+    if (loading) {
+        return (
+            <div className="h-[60vh] flex flex-col items-center justify-center">
+                <Loader2 className="h-7 w-7 animate-spin text-primary mb-4" />
+                <p className="text-base text-muted-foreground">Loading startups…</p>
+            </div>
+        );
+    }
 
     return (
-        <div className="space-y-6">
-            {/* Page Header */}
+        <div className="max-w-6xl mx-auto">
+            {/* header */}
             <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mb-10"
             >
-                <h1 className="text-2xl font-semibold tracking-tight">
-                    {isFounder ? "My Startup" : "Portfolio"}
+                <h1 className="text-3xl font-bold tracking-tight">
+                    My Startups
                 </h1>
-                <p className="text-muted-foreground mt-1">
-                    {isFounder ? "Manage your startup profile and fundraising" : "Track and manage your startup portfolio"}
+                <p className="text-base text-muted-foreground mt-2">
+                    Manage your startup evaluations
                 </p>
             </motion.div>
 
-            {/* Toolbar - Only show search/filter for investors or if there are multiple */}
-            {!isFounder && (
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.1 }}
-                    className="flex items-center justify-between gap-4"
-                >
-                    <div className="flex items-center gap-3 flex-1">
-                        <div className="relative flex-1 max-w-sm">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search startups..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-9"
-                            />
-                        </div>
-                        <Button variant="outline" size="icon">
-                            <Filter className="h-4 w-4" />
-                        </Button>
-                    </div>
-                    <div className="flex items-center gap-1 border border-border rounded-lg p-1">
-                        <Button
-                            variant={viewMode === "grid" ? "secondary" : "ghost"}
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={() => setViewMode("grid")}
+            {/* search */}
+            <div className="flex items-center gap-3 mb-8">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                        placeholder="Search startups..."
+                        className="pl-11 h-12 text-base border-border rounded-xl bg-transparent"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    {searchQuery && (
+                        <button
+                            onClick={() => setSearchQuery("")}
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                         >
-                            <Grid3x3 className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant={viewMode === "list" ? "secondary" : "ghost"}
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={() => setViewMode("list")}
-                        >
-                            <List className="h-4 w-4" />
-                        </Button>
-                    </div>
-                </motion.div>
-            )}
+                            <X className="h-5 w-5" />
+                        </button>
+                    )}
+                </div>
+            </div>
 
-            {/* Startups Grid/List */}
-            <div
-                className={cn(
-                    viewMode === "grid"
-                        ? "grid gap-4 md:grid-cols-2 xl:grid-cols-3"
-                        : "flex flex-col gap-3"
-                )}
-            >
+            {/* grid */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filteredStartups.map((startup, index) => (
-                    <StartupCard key={startup.id} startup={startup} index={index} viewMode={viewMode} />
+                    <StartupCard key={startup.id} startup={startup} index={index} />
                 ))}
             </div>
 
-            {/* Empty State */}
+            {/* empty */}
             {filteredStartups.length === 0 && (
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-center py-16"
+                    className="py-20 text-center"
                 >
-                    <p className="text-muted-foreground">No startups found matching your search.</p>
+                    <p className="text-base text-muted-foreground">
+                        No startups found matching your search.
+                    </p>
+                    <Button variant="outline" className="mt-4" asChild>
+                        <Link href="/evaluate">Start Evaluation</Link>
+                    </Button>
                 </motion.div>
             )}
         </div>

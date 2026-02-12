@@ -107,10 +107,12 @@ class AutoGenEvaluationOrchestrator:
         )
         agent_outputs["risk"] = risk_output
 
-        # ── Step 4: Longevity Agent (depends on Step 3) ───────
+        # ── Step 4: Longevity Agent (depends on Steps 1, 2, 3) ──
         longevity_context = build_autogen_context(startup_context, {
+            "validator": validator_output,
             "financial": financial_output,
             "market": market_output,
+            "competition": competition_output,
             "risk": risk_output,
         })
         longevity_output = await execute_autogen_agent(
@@ -119,9 +121,12 @@ class AutoGenEvaluationOrchestrator:
         )
         agent_outputs["longevity"] = longevity_output
 
-        # ── Step 5: Investor Fit Agent (depends on Step 4) ────
+        # ── Step 5: Investor Fit Agent (depends on ALL previous) ──
         investor_context = build_autogen_context(startup_context, {
+            "validator": validator_output,
             "financial": financial_output,
+            "market": market_output,
+            "competition": competition_output,
             "risk": risk_output,
             "longevity": longevity_output,
         })

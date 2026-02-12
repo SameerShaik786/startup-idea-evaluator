@@ -54,6 +54,7 @@ class EvaluationRequest(BaseModel):
     financial_raw_input: Dict[str, Any]
     qualitative: Dict[str, Any]
     metadata: Dict[str, Any]
+    user_id: str = None  # authenticated user's ID
 
 
 @app.get("/")
@@ -92,6 +93,37 @@ async def evaluate_startup(request: EvaluationRequest):
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Input validation failed: {str(e)}")
 
+        # ── Persist startup to `startups` table ──────────────────
+        # So the startup appears on the Discover page
+        if supabase:
+            try:
+                qualitative = request.qualitative or {}
+                startup_row = {
+                    "id": str(startup_ctx.startup_id),
+                    "name": startup_ctx.name,
+                    "industry": startup_ctx.industry,
+                    "stage": startup_ctx.stage,
+                    "description": startup_ctx.description,
+                    "website": startup_ctx.website,
+                    # Map to Discover page columns
+                    "tagline": startup_ctx.description,  # tagline = short description
+                    "sector": startup_ctx.industry,       # sector mirrors industry
+                    "about": qualitative.get("problem_description", startup_ctx.description),
+                    "product": qualitative.get("product_description", ""),
+                    "trending": False,
+                }
+                # Add founder_id if user_id provided
+                if request.user_id:
+                    startup_row["founder_id"] = request.user_id
+                # Upsert: insert or update if name already exists
+                supabase.table("startups").upsert(
+                    startup_row, on_conflict="id"
+                ).execute()
+                print(f"✅ Startup '{startup_ctx.name}' saved to startups table")
+            except Exception as e:
+                print(f"⚠️ Failed to save startup to startups table: {e}")
+                # Non-fatal: continue with evaluation even if this fails
+
         # Initialize agents and orchestrator
         agents = initialize_agents()
         orchestrator = AutoGenEvaluationOrchestrator(agents=agents)
@@ -119,7 +151,8 @@ async def evaluate_startup(request: EvaluationRequest):
         final_report = await evaluation_service.evaluate(
             startup_id=str(startup_ctx.startup_id),
             orchestration_output=orchestration_result,
-            startup_name=startup_ctx.name
+            startup_name=startup_ctx.name,
+            user_id=request.user_id
         )
 
         return final_report

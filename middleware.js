@@ -3,10 +3,11 @@ import { NextResponse } from "next/server";
 
 // Routes that require authentication
 const protectedRoutes = [
-    // "/",
+    "/",
     "/startups",
     "/evaluate",
     "/reports",
+    "/discover",
     "/settings",
 ];
 
@@ -20,6 +21,8 @@ const authRoutes = [
 
 export async function middleware(request) {
     const { pathname } = request.nextUrl;
+    console.log("Middleware checking path:", pathname);
+
 
     // Update session and get user
     const { user, supabaseResponse } = await updateSession(request);

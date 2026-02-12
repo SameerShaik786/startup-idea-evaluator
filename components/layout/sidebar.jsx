@@ -11,8 +11,8 @@ import {
   FileText,
   Settings,
   LogOut,
-  Briefcase,
   Search,
+  Heart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -37,54 +37,28 @@ import { useState, useCallback } from "react";
 // Navigation items based on user role
 const founderNavigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "My Startup", href: "/startups", icon: Rocket },
   { name: "Evaluate", href: "/evaluate", icon: PlusCircle },
+  { name: "My Startups", href: "/startups", icon: Rocket },
   { name: "Reports", href: "/reports", icon: FileText },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 const investorNavigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Portfolio", href: "/startups", icon: Briefcase },
   { name: "Discover", href: "/discover", icon: Search },
+  { name: "Interests", href: "/interests", icon: Heart },
   { name: "Reports", href: "/reports", icon: FileText },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
-
-
-// ... keep existing imports ...
-
 export function Sidebar({ onSignOut }) {
-  const { user, updateProfile } = useAuth();
+  const { user } = useAuth();
   const pathname = usePathname();
   const [isHovered, setIsHovered] = useState(false);
-  const [isSwitching, setIsSwitching] = useState(false);
 
-  // Get navigation based on role
-  // Default to investor if no role is found
+  // Get navigation based on role — role is permanent, no switching
   const userRole = user?.user_metadata?.role || "investor";
   const navigation = userRole === "founder" ? founderNavigation : investorNavigation;
-
-  const handleSwitchRole = async () => {
-    setIsSwitching(true);
-    const newRole = userRole === "founder" ? "investor" : "founder";
-    console.log("Switching role to:", newRole);
-    try {
-      const { data, error } = await updateProfile({ role: newRole });
-      if (error) {
-        console.error("Error updating profile:", error);
-      } else {
-        console.log("Profile updated successfully:", data);
-        // Optional: Force a router refresh if needed, but context should handle it
-        // router.refresh(); 
-      }
-    } catch (error) {
-      console.error("Failed to switch role:", error);
-    } finally {
-      setIsSwitching(false);
-    }
-  };
 
   // Debounced hover handlers for smooth expansion
   const handleMouseEnter = useCallback(() => {
@@ -242,7 +216,7 @@ export function Sidebar({ onSignOut }) {
                     {user?.name || "Guest User"}
                   </p>
                   <p className="text-xs text-muted-foreground truncate capitalize">
-                    {user?.user_metadata?.role || "Investor"}
+                    {userRole}
                   </p>
                 </motion.div>
               )}
@@ -256,20 +230,6 @@ export function Sidebar({ onSignOut }) {
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>
               </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.preventDefault();
-                handleSwitchRole();
-              }}
-              className="cursor-pointer"
-              disabled={isSwitching}
-            >
-              <Briefcase className="mr-2 h-4 w-4" />
-              <span>
-                {isSwitching ? "Switching..." : `Switch to ${userRole === "founder" ? "Investor" : "Founder"}`}
-              </span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={onSignOut} className="text-destructive focus:text-destructive cursor-pointer">

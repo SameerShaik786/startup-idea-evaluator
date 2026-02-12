@@ -24,19 +24,21 @@ class EvaluationRepository:
         self.table_name = "startup_evaluations"
 
     async def save_evaluation(
-        self, report: Dict[str, Any]
+        self, report: Dict[str, Any], user_id: str = None
     ) -> Dict[str, Any]:
         """
         Save a complete evaluation report to the database.
 
         Args:
             report: Output from ReportBuilder.build_final_report().
+            user_id: The authenticated user's ID (optional).
 
         Returns:
             The saved record dict (with id if available).
         """
         record = {
             "startup_id": report.get("startup_id", "unknown"),
+            "user_id": user_id,
             "final_score": report.get("final_score", 0.0),
             "risk_label": report.get("risk_label", "HIGH_RISK"),
             "report_json": json.dumps(report, default=str),

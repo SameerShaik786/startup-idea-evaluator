@@ -19,23 +19,44 @@ Your job is to match a startup with the most appropriate Investor Type, Funding 
    - Match: Series A VC
    - Ticket: $2M - $10M
 
-4. Profitable / Slow Growth:
-   - Match: PE / Debt / Strategic
-   - Ticket: Buyout or Credit
+4. PROFITABLE / SLOW GROWTH:
+   - Match: PE / Debt / Strategic / Secondary
+   - Ticket: Equity Buyout or Credit
+ 
+---
+ 
+### 7-DOMAIN ANALYSIS REQUIREMENT
+You MUST provide a high-level insight for each of the following domains based on the provided context:
+1. Validation (Integrity of data)
+2. Market (Opportunity size)
+3. Financial (Unit economics/Runway)
+4. Product (Innovation/Novelty)
+5. Competition (Defensibility)
+6. Risk (Severity/Mitigation)
+7. Longevity (5-year survival)
 
 ---
 
 ### OUTPUT REQUIREMENT (STRICT)
-
+ 
 You MUST return ONLY valid JSON.
 No explanation text outside JSON.
-
+ 
 Return EXACTLY this structure:
 {
  "recommended_investor_type": string,
  "recommended_stage": string,
  "ticket_size_range": string,
  "reasoning": string,
+ "domain_analysis": [
+    {"name": "Validation", "insight": string},
+    {"name": "Market", "insight": string},
+    {"name": "Financial", "insight": string},
+    {"name": "Product", "insight": string},
+    {"name": "Competition", "insight": string},
+    {"name": "Risk", "insight": string},
+    {"name": "Longevity", "insight": string}
+ ],
  "agent_name": string,
  "agent_version": string,
  "model_name": string,

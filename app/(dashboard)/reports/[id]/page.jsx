@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import React, { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { ReportHeader } from "@/components/report/report-header";
 import { SegmentNav } from "@/components/report/segment-nav";
 import { OverviewView } from "@/components/report/overview-view";
@@ -12,20 +12,25 @@ import { CompetitionView } from "@/components/report/competition-view";
 import { RiskView } from "@/components/report/risk-view";
 import { LongevityView, InvestorFitView } from "@/components/report/misc-views";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2 } from "lucide-react";
+// import { Loader2 } from "lucide-react";
+const Loader2 = (props) => <span {...props}>⏳</span>;
 
 export default function ReportPage({ params }) {
+    const { id } = React.use(params);
     const [report, setReport] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeSegment, setActiveSegment] = useState("overview");
 
     useEffect(() => {
         async function fetchReport() {
+            const supabase = createClient();
             const { data, error } = await supabase
                 .from("startup_evaluations")
                 .select("*")
-                .eq("startup_id", params.id)
+                .eq("startup_id", id)
                 .single();
+
+            console.log("Fetch result:", { data, error });
 
             if (data) {
                 // Parse report_json if it's a string, otherwise use as is
@@ -33,9 +38,20 @@ export default function ReportPage({ params }) {
                     ? JSON.parse(data.report_json)
                     : data.report_json;
 
+                // Scale scores if they are in 0-1 range
+                const scale = (s) => (s <= 1 && s > 0) ? s * 100 : s;
+
+                const processedReport = {
+                    ...parsedReport,
+                    final_score: scale(parsedReport.final_score || data.final_score),
+                    component_scores: parsedReport.component_scores
+                        ? Object.fromEntries(Object.entries(parsedReport.component_scores).map(([k, v]) => [k, scale(v)]))
+                        : {}
+                };
+
                 // Merge with metadata
                 setReport({
-                    ...parsedReport,
+                    ...processedReport,
                     metadata: {
                         created_at: data.created_at,
                         startup_id: data.startup_id
@@ -45,22 +61,22 @@ export default function ReportPage({ params }) {
             setLoading(false);
         }
         fetchReport();
-    }, [params.id]);
+    }, [id]);
 
     if (loading) {
         return (
-            <div className="h-screen flex items-center justify-center bg-[#202020] text-blue-500">
+            <div className="h-screen flex items-center justify-center bg-background text-primary">
                 <Loader2 className="h-12 w-12 animate-spin" />
             </div>
         );
     }
 
     if (!report) {
-        return <div className="p-8 text-center text-white">Report not found.</div>;
+        return <div className="p-8 text-center text-foreground">Report not found.</div>;
     }
 
     return (
-        <div className="min-h-screen bg-[#202020] pb-20">
+        <div className="min-h-screen bg-background pb-20">
             <ReportHeader
                 data={report}
                 activeSegment={activeSegment}
@@ -72,8 +88,7 @@ export default function ReportPage({ params }) {
                 onSelect={setActiveSegment}
             />
 
-            <main className={`transition-colors duration-500 min-h-[calc(100vh-200px)] ${activeSegment !== 'overview' ? 'bg-slate-900/50' : ''
-                }`}>
+            <main className="min-h-[calc(100vh-200px)]">
                 <div className="max-w-7xl mx-auto p-4 md:p-6">
                     <AnimatePresence mode="wait">
                         <motion.div

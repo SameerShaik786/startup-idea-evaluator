@@ -150,6 +150,78 @@ const STEP_TITLES = {
     6: "Team",
 };
 
+// ─── Reusable Sub-Components (defined OUTSIDE to prevent focus loss) ──
+
+function FormTextarea({ name, value, onChange, placeholder, rows = 4, className }) {
+    return (
+        <textarea
+            name={name}
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            rows={rows}
+            className={cn(
+                "flex w-full rounded-lg border border-input px-4 py-3 text-sm",
+                "ring-offset-background placeholder:text-muted-foreground",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                "disabled:cursor-not-allowed disabled:opacity-50",
+                "resize-none",
+                className
+            )}
+        />
+    );
+}
+
+function FormSelect({ name, value, onChange, options, placeholder }) {
+    return (
+        <select
+            name={name}
+            value={value}
+            onChange={onChange}
+            className={cn(
+                "flex h-11 w-full rounded-lg border border-input px-4 py-2 text-sm",
+                "ring-offset-background focus-visible:outline-none focus-visible:ring-2",
+                "focus-visible:ring-ring focus-visible:ring-offset-2",
+                !value && "text-muted-foreground"
+            )}
+        >
+            <option value="" disabled>{placeholder}</option>
+            {options.map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+            ))}
+        </select>
+    );
+}
+
+function FormCurrencyInput({ name, label, description, error, placeholder, icon: Icon, value, onChange }) {
+    return (
+        <FormField
+            label={label}
+            description={description}
+            required
+            fieldType={FormField.TYPES.EVIDENCE}
+            error={error}
+        >
+            <div className="relative">
+                {Icon && (
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        <Icon className="h-4 w-4" />
+                    </div>
+                )}
+                <Input
+                    name={name}
+                    type="number"
+                    step="0.01"
+                    value={value}
+                    onChange={onChange}
+                    placeholder={placeholder}
+                    className={cn("h-11", Icon && "pl-9")}
+                />
+            </div>
+        </FormField>
+    );
+}
+
 // ─── Component ────────────────────────────────────────────
 
 export function EvaluationForm({ onSubmit }) {
@@ -309,82 +381,14 @@ export function EvaluationForm({ onSubmit }) {
         }
     };
 
-    // ─── Reusable Sub-Components ──────────────────────────
-
-    const Textarea = ({ name, value, onChange, placeholder, rows = 4, className }) => (
-        <textarea
-            name={name}
-            value={value}
-            onChange={onChange}
-            placeholder={placeholder}
-            rows={rows}
-            className={cn(
-                "flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-                "ring-offset-background placeholder:text-muted-foreground",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                "disabled:cursor-not-allowed disabled:opacity-50",
-                "resize-none",
-                className
-            )}
-        />
-    );
-
-    const Select = ({ name, value, onChange, options, placeholder }) => (
-        <select
-            name={name}
-            value={value}
-            onChange={onChange}
-            className={cn(
-                "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-                "ring-offset-background focus-visible:outline-none focus-visible:ring-2",
-                "focus-visible:ring-ring focus-visible:ring-offset-2",
-                !value && "text-muted-foreground"
-            )}
-        >
-            <option value="" disabled>{placeholder}</option>
-            {options.map((opt) => (
-                <option key={opt} value={opt}>{opt}</option>
-            ))}
-        </select>
-    );
-
-    // ─── Financial Helper Sub-Component ───────────────────
-
-    const CurrencyInput = ({ name, label, description, error, placeholder, icon: Icon }) => (
-        <FormField
-            label={label}
-            description={description}
-            required
-            fieldType={FormField.TYPES.EVIDENCE}
-            error={error}
-        >
-            <div className="relative">
-                {Icon && (
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                        <Icon className="h-4 w-4" />
-                    </div>
-                )}
-                <Input
-                    name={name}
-                    type="number"
-                    step="0.01"
-                    value={formData[name]}
-                    onChange={handleInputChange}
-                    placeholder={placeholder}
-                    className={cn(Icon && "pl-9")}
-                />
-            </div>
-        </FormField>
-    );
-
     // ─── Render ───────────────────────────────────────────
 
     return (
-        <div className="grid lg:grid-cols-[1fr,300px] gap-6">
+        <div className="grid lg:grid-cols-[1fr,320px] gap-8">
             {/* Main Form */}
             <div className="space-y-6">
                 {/* Progress */}
-                <Card className="border-border">
+                <Card className="border-border" style={{ backgroundColor: 'transparent' }}>
                     <CardContent className="py-6">
                         <StepProgress
                             currentStep={currentStep}
@@ -403,9 +407,9 @@ export function EvaluationForm({ onSubmit }) {
                         exit={{ opacity: 0, x: -20 }}
                         transition={{ duration: 0.2 }}
                     >
-                        <Card className="border-border">
-                            <CardHeader className="border-b border-border">
-                                <CardTitle className="text-lg font-medium">
+                        <Card className="border-border" style={{ backgroundColor: 'transparent' }}>
+                            <CardHeader className="border-b border-border px-6 py-5">
+                                <CardTitle className="text-xl font-semibold">
                                     {STEP_TITLES[currentStep]}
                                 </CardTitle>
                             </CardHeader>
@@ -426,6 +430,7 @@ export function EvaluationForm({ onSubmit }) {
                                                     value={formData.startupName}
                                                     onChange={handleInputChange}
                                                     placeholder="e.g., Acme Technologies"
+                                                    className="h-11"
                                                 />
                                             </FormField>
 
@@ -439,6 +444,7 @@ export function EvaluationForm({ onSubmit }) {
                                                     value={formData.website}
                                                     onChange={handleInputChange}
                                                     placeholder="https://example.com"
+                                                    className="h-11"
                                                 />
                                             </FormField>
                                         </div>
@@ -457,6 +463,7 @@ export function EvaluationForm({ onSubmit }) {
                                                 value={formData.tagline}
                                                 onChange={handleInputChange}
                                                 placeholder="We help X do Y with Z"
+                                                className="h-11"
                                             />
                                         </FormField>
 
@@ -467,7 +474,7 @@ export function EvaluationForm({ onSubmit }) {
                                                 fieldType={FormField.TYPES.EVIDENCE}
                                                 error={errors.industry}
                                             >
-                                                <Select
+                                                <FormSelect
                                                     name="industry"
                                                     value={formData.industry}
                                                     onChange={handleInputChange}
@@ -482,7 +489,7 @@ export function EvaluationForm({ onSubmit }) {
                                                 fieldType={FormField.TYPES.EVIDENCE}
                                                 error={errors.stage}
                                             >
-                                                <Select
+                                                <FormSelect
                                                     name="stage"
                                                     value={formData.stage}
                                                     onChange={handleInputChange}
@@ -501,6 +508,7 @@ export function EvaluationForm({ onSubmit }) {
                                                     type="date"
                                                     value={formData.foundedDate}
                                                     onChange={handleInputChange}
+                                                    className="h-11"
                                                 />
                                             </FormField>
                                         </div>
@@ -519,7 +527,7 @@ export function EvaluationForm({ onSubmit }) {
                                             characterCount={formData.problemDescription.length}
                                             maxCharacters={1000}
                                         >
-                                            <Textarea
+                                            <FormTextarea
                                                 name="problemDescription"
                                                 value={formData.problemDescription}
                                                 onChange={handleInputChange}
@@ -535,7 +543,7 @@ export function EvaluationForm({ onSubmit }) {
                                             fieldType={FormField.TYPES.OPINION}
                                             error={errors.targetCustomerPersona}
                                         >
-                                            <Textarea
+                                            <FormTextarea
                                                 name="targetCustomerPersona"
                                                 value={formData.targetCustomerPersona}
                                                 onChange={handleInputChange}
@@ -551,7 +559,7 @@ export function EvaluationForm({ onSubmit }) {
                                             fieldType={FormField.TYPES.EVIDENCE}
                                             error={errors.currentAlternatives}
                                         >
-                                            <Textarea
+                                            <FormTextarea
                                                 name="currentAlternatives"
                                                 value={formData.currentAlternatives}
                                                 onChange={handleInputChange}
@@ -567,7 +575,7 @@ export function EvaluationForm({ onSubmit }) {
                                             fieldType={FormField.TYPES.OPINION}
                                             error={errors.whyNow}
                                         >
-                                            <Textarea
+                                            <FormTextarea
                                                 name="whyNow"
                                                 value={formData.whyNow}
                                                 onChange={handleInputChange}
@@ -607,6 +615,7 @@ export function EvaluationForm({ onSubmit }) {
                                                     type="date"
                                                     value={formData.periodStart}
                                                     onChange={handleInputChange}
+                                                    className="h-11"
                                                 />
                                             </FormField>
 
@@ -622,6 +631,7 @@ export function EvaluationForm({ onSubmit }) {
                                                     type="date"
                                                     value={formData.periodEnd}
                                                     onChange={handleInputChange}
+                                                    className="h-11"
                                                 />
                                             </FormField>
 
@@ -631,7 +641,7 @@ export function EvaluationForm({ onSubmit }) {
                                                 fieldType={FormField.TYPES.EVIDENCE}
                                                 error={errors.currency}
                                             >
-                                                <Select
+                                                <FormSelect
                                                     name="currency"
                                                     value={formData.currency}
                                                     onChange={handleInputChange}
@@ -643,48 +653,58 @@ export function EvaluationForm({ onSubmit }) {
 
                                         {/* Revenue & Costs */}
                                         <div className="grid md:grid-cols-2 gap-6">
-                                            <CurrencyInput
+                                            <FormCurrencyInput
                                                 name="revenue"
                                                 label="Total Revenue"
                                                 description="Total revenue for the reporting period"
                                                 error={errors.revenue}
                                                 placeholder="e.g., 250000"
                                                 icon={DollarSign}
+                                                value={formData.revenue}
+                                                onChange={handleInputChange}
                                             />
-                                            <CurrencyInput
+                                            <FormCurrencyInput
                                                 name="cogs"
                                                 label="Cost of Goods Sold (COGS)"
                                                 description="Direct costs attributable to production"
                                                 error={errors.cogs}
                                                 placeholder="e.g., 75000"
                                                 icon={DollarSign}
+                                                value={formData.cogs}
+                                                onChange={handleInputChange}
                                             />
                                         </div>
 
                                         <div className="grid md:grid-cols-3 gap-6">
-                                            <CurrencyInput
+                                            <FormCurrencyInput
                                                 name="operatingExpenses"
                                                 label="Operating Expenses"
                                                 description="Salaries, rent, marketing, etc."
                                                 error={errors.operatingExpenses}
                                                 placeholder="e.g., 120000"
                                                 icon={DollarSign}
+                                                value={formData.operatingExpenses}
+                                                onChange={handleInputChange}
                                             />
-                                            <CurrencyInput
+                                            <FormCurrencyInput
                                                 name="cashBalance"
                                                 label="Current Cash Balance"
                                                 description="Cash in bank right now"
                                                 error={errors.cashBalance}
                                                 placeholder="e.g., 500000"
                                                 icon={DollarSign}
+                                                value={formData.cashBalance}
+                                                onChange={handleInputChange}
                                             />
-                                            <CurrencyInput
+                                            <FormCurrencyInput
                                                 name="monthlyBurnRate"
                                                 label="Monthly Burn Rate"
                                                 description="Average net cash outflow per month"
                                                 error={errors.monthlyBurnRate}
                                                 placeholder="e.g., 40000"
                                                 icon={TrendingUp}
+                                                value={formData.monthlyBurnRate}
+                                                onChange={handleInputChange}
                                             />
                                         </div>
                                     </>
@@ -700,7 +720,7 @@ export function EvaluationForm({ onSubmit }) {
                                             fieldType={FormField.TYPES.EVIDENCE}
                                             error={errors.productDescription}
                                         >
-                                            <Textarea
+                                            <FormTextarea
                                                 name="productDescription"
                                                 value={formData.productDescription}
                                                 onChange={handleInputChange}
@@ -720,6 +740,7 @@ export function EvaluationForm({ onSubmit }) {
                                                 value={formData.demoUrl}
                                                 onChange={handleInputChange}
                                                 placeholder="https://demo.example.com"
+                                                className="h-11"
                                             />
                                         </FormField>
 
@@ -735,6 +756,7 @@ export function EvaluationForm({ onSubmit }) {
                                                     value={formData.usersCount}
                                                     onChange={handleInputChange}
                                                     placeholder="e.g., 1000"
+                                                    className="h-11"
                                                 />
                                             </FormField>
 
@@ -748,6 +770,7 @@ export function EvaluationForm({ onSubmit }) {
                                                     value={formData.retentionMetrics}
                                                     onChange={handleInputChange}
                                                     placeholder="e.g., 85% monthly"
+                                                    className="h-11"
                                                 />
                                             </FormField>
                                         </div>
@@ -764,7 +787,7 @@ export function EvaluationForm({ onSubmit }) {
                                             fieldType={FormField.TYPES.EVIDENCE}
                                             error={errors.competitors}
                                         >
-                                            <Textarea
+                                            <FormTextarea
                                                 name="competitors"
                                                 value={formData.competitors}
                                                 onChange={handleInputChange}
@@ -780,7 +803,7 @@ export function EvaluationForm({ onSubmit }) {
                                             fieldType={FormField.TYPES.OPINION}
                                             error={errors.differentiation}
                                         >
-                                            <Textarea
+                                            <FormTextarea
                                                 name="differentiation"
                                                 value={formData.differentiation}
                                                 onChange={handleInputChange}
@@ -796,7 +819,7 @@ export function EvaluationForm({ onSubmit }) {
                                             fieldType={FormField.TYPES.OPINION}
                                             error={errors.whyYouWin}
                                         >
-                                            <Textarea
+                                            <FormTextarea
                                                 name="whyYouWin"
                                                 value={formData.whyYouWin}
                                                 onChange={handleInputChange}
@@ -817,7 +840,7 @@ export function EvaluationForm({ onSubmit }) {
                                             fieldType={FormField.TYPES.EVIDENCE}
                                             error={errors.founderBackground}
                                         >
-                                            <Textarea
+                                            <FormTextarea
                                                 name="founderBackground"
                                                 value={formData.founderBackground}
                                                 onChange={handleInputChange}
@@ -833,7 +856,7 @@ export function EvaluationForm({ onSubmit }) {
                                             fieldType={FormField.TYPES.EVIDENCE}
                                             error={errors.domainExperience}
                                         >
-                                            <Textarea
+                                            <FormTextarea
                                                 name="domainExperience"
                                                 value={formData.domainExperience}
                                                 onChange={handleInputChange}
@@ -848,7 +871,7 @@ export function EvaluationForm({ onSubmit }) {
                                             fieldType={FormField.TYPES.EVIDENCE}
                                             error={errors.pastWinsFailures}
                                         >
-                                            <Textarea
+                                            <FormTextarea
                                                 name="pastWinsFailures"
                                                 value={formData.pastWinsFailures}
                                                 onChange={handleInputChange}
@@ -904,13 +927,13 @@ export function EvaluationForm({ onSubmit }) {
 
             {/* Sidebar */}
             <div className="hidden lg:block space-y-6">
-                <Card className="border-border sticky top-24">
-                    <CardHeader className="border-b border-border">
-                        <CardTitle className="text-sm font-medium">
+                <Card className="border-border sticky top-24" style={{ backgroundColor: 'transparent' }}>
+                    <CardHeader className="border-b border-border px-5 py-4">
+                        <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                             Application Status
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-4">
+                    <CardContent className="p-5">
                         <ConfidenceIndicator sections={getSectionCompletion()} />
                         {lastSaved && (
                             <div className="mt-4 pt-4 border-t border-border flex items-center gap-2 text-xs text-muted-foreground">

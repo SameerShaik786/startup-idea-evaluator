@@ -26,6 +26,7 @@ class EvaluationService:
         startup_id: str,
         orchestration_output: Dict[str, Any],
         startup_name: str = "Unknown Startup",
+        user_id: str = None,
     ) -> Dict[str, Any]:
         """
         Full post-orchestration pipeline.
@@ -51,7 +52,7 @@ class EvaluationService:
 
         # Layer 8: Persist
         print(f"DEBUG: Attempting to save report for {startup_id}...")
-        save_result = await self.repository.save_evaluation(report)
+        save_result = await self.repository.save_evaluation(report, user_id=user_id)
         print(f"DEBUG: Save result: {save_result}")
 
         # Attach persistence status to report

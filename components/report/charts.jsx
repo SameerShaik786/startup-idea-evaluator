@@ -24,8 +24,8 @@ import {
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
 
-export const CustomBarChart = ({ data, xKey, yKey, color = "#8884d8" }) => (
-    <ResponsiveContainer width="100%" height={300}>
+export const CustomBarChart = ({ data, xKey, yKey, color = "#8884d8", height = 300 }) => (
+    <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#444" />
             <XAxis dataKey={xKey} stroke="#ccc" tick={{ fill: "#ccc" }} />
@@ -134,7 +134,7 @@ export const ScoreGauge = ({ score }) => {
                 />
             </svg>
             <div className="absolute flex flex-col items-center">
-                <span className="text-4xl font-bold text-white">{Math.round(score)}</span>
+                <span className="text-4xl font-bold text-foreground">{Math.round(score)}</span>
                 <span className="text-xs text-gray-400">/ 100</span>
             </div>
         </div>

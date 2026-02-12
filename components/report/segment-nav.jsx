@@ -16,7 +16,7 @@ const SEGMENTS = [
 
 export function SegmentNav({ activeSegment, onSelect }) {
     return (
-        <div className="sticky top-0 z-20 bg-[#202020]/95 backdrop-blur border-b border-gray-800">
+        <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border">
             <div className="max-w-7xl mx-auto px-4 md:px-0">
                 <nav className="flex overflow-x-auto no-scrollbar py-2 gap-1">
                     {SEGMENTS.map((segment) => (
@@ -26,8 +26,8 @@ export function SegmentNav({ activeSegment, onSelect }) {
                             className={cn(
                                 "relative px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap rounded-md",
                                 activeSegment === segment.id
-                                    ? "text-white bg-white/10"
-                                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                                    ? "text-foreground bg-white/10"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                             )}
                         >
                             {segment.label}

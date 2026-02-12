@@ -1,10 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { format } from "date-fns";
+// import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { ShieldAlert, TrendingUp, DollarSign, Target } from "lucide-react";
+const ShieldAlert = (props) => <span {...props}>⚠️</span>;
+const TrendingUp = (props) => <span {...props}>📈</span>;
+const DollarSign = (props) => <span {...props}>$</span>;
+const Goal = (props) => <span {...props}>🎯</span>;
 
 export function ReportHeader({ data, onComponentClick, activeSegment }) {
     if (!data) return null;
@@ -30,33 +33,33 @@ export function ReportHeader({ data, onComponentClick, activeSegment }) {
         { id: "financial", label: "Financial", icon: DollarSign, score: component_scores?.financial || 0 },
         { id: "market", label: "Market", icon: TrendingUp, score: component_scores?.market || 0 },
         { id: "risk", label: "Risk", icon: ShieldAlert, score: component_scores?.risk || 0 },
-        { id: "validation", label: "Validator", icon: Target, score: component_scores?.validation || 0 },
+        { id: "validation", label: "Validator", icon: Goal, score: component_scores?.validation || 0 },
     ];
 
     return (
-        <div className="bg-[#202020] border-b border-gray-800 p-6 shadow-md">
+        <div className="bg-background border-b border-border p-6 shadow-md">
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 
                     {/* Title Section */}
                     <div>
                         <div className="flex items-center gap-3 mb-1">
-                            <h1 className="text-3xl font-bold text-white tracking-tight">
+                            <h1 className="text-3xl font-bold text-foreground tracking-tight">
                                 {startup_name || "Startup Analysis"}
                             </h1>
                             <Badge variant="outline" className={cn("border", riskColor)}>
                                 {risk_label || "Unknown"} Risk
                             </Badge>
                         </div>
-                        <p className="text-gray-400 text-sm">
-                            Generated on {metadata?.created_at ? format(new Date(metadata.created_at), "PPP p") : "Just now"}
+                        <p className="text-muted-foreground text-sm">
+                            Generated on {metadata?.created_at ? new Intl.DateTimeFormat('en-US', { dateStyle: 'long', timeStyle: 'short' }).format(new Date(metadata.created_at)) : "Just now"}
                         </p>
                     </div>
 
                     {/* Score Display */}
                     <div className="flex items-center gap-4 bg-black/20 p-3 rounded-lg border border-white/5">
                         <div className="text-right">
-                            <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">AI Score</p>
+                            <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">AI Score</p>
                             <div className={cn("text-4xl font-black", scoreColor)}>
                                 {Math.round(final_score)}
                             </div>
@@ -73,7 +76,7 @@ export function ReportHeader({ data, onComponentClick, activeSegment }) {
                                         activeSegment === comp.id ? "bg-white/10 ring-1 ring-white/20" : "bg-transparent"
                                     )}
                                 >
-                                    <comp.icon className="w-4 h-4 text-gray-400 mb-1" />
+                                    <comp.icon className="w-4 h-4 text-muted-foreground mb-1" />
                                     <span className={cn("text-xs font-bold",
                                         comp.score >= 70 ? "text-green-400" :
                                             comp.score >= 50 ? "text-yellow-400" : "text-red-400"
