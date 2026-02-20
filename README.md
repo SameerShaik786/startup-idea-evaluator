@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">🚀 IdeaEvaluator</h1>
+  <h1 align="center">IdeaEvaluator</h1>
   <p align="center">
     <strong>AI-Powered Startup Evaluation Platform</strong>
   </p>
@@ -8,37 +8,28 @@
   </p>
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Next.js-16-black?logo=next.js" alt="Next.js" />
-  <img src="https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/AutoGen-0.7-blue?logo=microsoft" alt="AutoGen" />
-  <img src="https://img.shields.io/badge/Groq-Llama_3.3_70B-orange" alt="Groq" />
-  <img src="https://img.shields.io/badge/Supabase-Auth_%26_DB-3ECF8E?logo=supabase" alt="Supabase" />
-  <img src="https://img.shields.io/badge/TailwindCSS-4-38bdf8?logo=tailwindcss" alt="TailwindCSS" />
-</p>
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Backend Structure](#backend-structure)
+- [Multi-Agent Pipeline](#multi-agent-pipeline)
+- [Sequence Diagrams](#sequence-diagrams)
+- [Data Flow](#data-flow)
+- [Database Schema](#database-schema)
+- [Getting Started](#getting-started)
+- [API Reference](#api-reference)
+- [Project Structure](#project-structure)
+- [Environment Variables](#environment-variables)
+- [Further Improvements](#further-improvements)
 
 ---
 
-## 📋 Table of Contents
-
-- [Overview](#-overview)
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Architecture](#-architecture)
-- [Backend Structure](#-backend-structure)
-- [Multi-Agent Pipeline](#-multi-agent-pipeline)
-- [Sequence Diagrams](#-sequence-diagrams)
-- [Data Flow](#-data-flow)
-- [Database Schema](#-database-schema)
-- [Getting Started](#-getting-started)
-- [API Reference](#-api-reference)
-- [Project Structure](#-project-structure)
-- [Environment Variables](#-environment-variables)
-- [License](#-license)
-
----
-
-## 🌟 Overview
+## Overview
 
 **IdeaEvaluator** is a full-stack startup evaluation platform that leverages Microsoft's **AutoGen v0.7** multi-agent framework to orchestrate 7 specialized AI agents. Each agent analyzes a different domain of a startup — from financial viability to investor fit — producing a comprehensive, investment-grade evaluation report.
 
@@ -51,24 +42,24 @@ The platform features:
 
 ---
 
-## ✨ Features
+## Features
 
 | Feature | Description |
 |---|---|
-| 🤖 **7-Agent AI Analysis** | Parallel multi-agent evaluation across Financial, Market, Competition, Risk, Longevity, Validation, and Investor Fit domains |
-| 📝 **Smart Evaluation Form** | 5-step guided submission with auto-save, validation, and confidence scoring |
-| ✨ **Magic Auto-Fill** | Paste a pitch deck and let AI extract structured data for the form |
-| 📊 **Interactive Reports** | Recharts-powered visualizations with radar charts, bar charts, and score breakdowns |
-| 🔐 **Supabase Auth** | Email/password, magic link, and OAuth authentication with RLS policies |
-| 👤 **Role-Based Views** | Founder dashboard (My Startups) vs Investor dashboard (Discover + Interests) |
-| 🌙 **Dark/Light Mode** | Theme toggle with `next-themes` and system preference detection |
-| ⚡ **Parallel Execution** | `asyncio.gather`-based parallel agent execution for faster evaluations |
-| 🛡️ **Error Isolation** | Individual agent failures don't crash the pipeline — graceful degradation |
-| 💾 **Evaluation Persistence** | Reports stored in Supabase (PostgreSQL) with user ownership |
+| **7-Agent AI Analysis** | Parallel multi-agent evaluation across Financial, Market, Competition, Risk, Longevity, Validation, and Investor Fit domains |
+| **Smart Evaluation Form** | 5-step guided submission with auto-save, validation, and confidence scoring |
+| **Magic Auto-Fill** | Paste a pitch deck and let AI extract structured data for the form |
+| **Interactive Reports** | Recharts-powered visualizations with radar charts, bar charts, and score breakdowns |
+| **Supabase Auth** | Email/password, magic link, and OAuth authentication with RLS policies |
+| **Role-Based Views** | Founder dashboard (My Startups) vs Investor dashboard (Discover + Interests) |
+| **Dark/Light Mode** | Theme toggle with `next-themes` and system preference detection |
+| **Parallel Execution** | `asyncio.gather`-based parallel agent execution for faster evaluations |
+| **Error Isolation** | Individual agent failures don't crash the pipeline — graceful degradation |
+| **Evaluation Persistence** | Reports stored in Supabase (PostgreSQL) with user ownership |
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 
@@ -109,7 +100,7 @@ The platform features:
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ### High-Level System Architecture
 
@@ -204,7 +195,7 @@ graph LR
 
 ---
 
-## 📁 Backend Structure
+## Backend Structure
 
 ```
 backend/
@@ -266,7 +257,7 @@ backend/
 
 ---
 
-## 🤖 Multi-Agent Pipeline
+## Multi-Agent Pipeline
 
 The evaluation pipeline uses **7 specialist AutoGen agents** orchestrated in a deterministic, dependency-aware order:
 
@@ -335,7 +326,7 @@ The final investment score is calculated using a **deterministic weighted formul
 
 ---
 
-## 📊 Sequence Diagrams
+## Sequence Diagrams
 
 ### 1. Full Evaluation Flow
 
@@ -503,7 +494,7 @@ sequenceDiagram
 
 ---
 
-## 🔄 Data Flow
+## Data Flow
 
 ### Class Diagram — Pydantic Models
 
@@ -609,7 +600,7 @@ classDiagram
 
 ---
 
-## 🗄️ Database Schema
+## Database Schema
 
 ```mermaid
 erDiagram
@@ -659,7 +650,7 @@ erDiagram
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -722,7 +713,7 @@ The app will be available at:
 
 ---
 
-## 📡 API Reference
+## API Reference
 
 ### `GET /`
 Health check endpoint.
@@ -803,7 +794,7 @@ Run the full 7-agent evaluation pipeline. Requires authentication.
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 ideaevaluator/
@@ -849,7 +840,7 @@ ideaevaluator/
 
 ---
 
-## 🔐 Environment Variables
+## Environment Variables
 
 | Variable | Required | Description |
 |---|---|---|
@@ -859,22 +850,26 @@ ideaevaluator/
 
 ---
 
-## 🤝 Contributing
+## Further Improvements
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+The following enhancements are planned to make IdeaEvaluator more comprehensive and data-driven:
 
----
+- **Document-Based User Data Evaluation** — Allow founders to upload supporting documents (pitch decks, business plans, one-pagers) and have the AI agents automatically extract and evaluate structured data from them, reducing manual form entry and improving data accuracy.
 
-## 📄 License
+- **Financial Document Analysis** — Enable founders to upload financial documents (income statements, balance sheets, cap tables, bank statements) so the Financial Agent can parse real financial data instead of relying on self-reported figures, producing more reliable health scores.
 
-This project is private and proprietary.
+- **Pitch Deck PDF/Slide Parsing** — Support direct PDF or slide deck uploads with page-level extraction, allowing the system to analyze visual and textual content from actual investor-ready materials.
+
+- **Due Diligence Document Support** — Accept legal and compliance documents (term sheets, incorporation certificates, IP filings) to feed into the Risk and Validation agents for deeper due diligence analysis.
+
+- **Comparative Benchmarking** — Benchmark a startup's metrics against industry averages and similar-stage companies using aggregated historical evaluation data.
+
+- **Investor Portfolio Matching** — Match startups with investors based on portfolio history, sector focus, and check size preferences using a dedicated recommendation engine.
+
+- **Time-Series Tracking** — Allow founders to submit periodic evaluations and track how their scores evolve over time with trend visualizations.
 
 ---
 
 <p align="center">
-  Built with ❤️ using <strong>Next.js</strong>, <strong>AutoGen</strong>, <strong>FastAPI</strong>, and <strong>Groq</strong>
+  Built with Next.js, AutoGen, FastAPI, and Groq
 </p>
