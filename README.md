@@ -1,10 +1,10 @@
 <p align="center">
-  <h1 align="center">≡ƒÜÇ IdeaEvaluator</h1>
+  <h1 align="center">IdeaEvaluator</h1>
   <p align="center">
-    <strong>AI-Powered Startup Evaluation Platform</strong>
+    <strong>LLM-Orchestrated Startup Evaluation Workflow System</strong>
   </p>
   <p align="center">
-    A multi-agent intelligence system that evaluates startup ideas across 7 domains ΓÇö Financial Health, Market Potential, Competition, Risk, Longevity, Validation & Investor Fit ΓÇö delivering investment-grade reports in seconds.
+    A multi-agent intelligence system that evaluates startup ideas across 7 domains -- Financial Health, Market Potential, Competition, Risk, Longevity, Validation & Investor Fit -- delivering structured reports in seconds.
   </p>
 </p>
 
@@ -19,28 +19,28 @@
 
 ---
 
-## ≡ƒôï Table of Contents
+## Table of Contents
 
-- [Overview](#-overview)
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Architecture](#-architecture)
-- [Backend Structure](#-backend-structure)
-- [Multi-Agent Pipeline](#-multi-agent-pipeline)
-- [Sequence Diagrams](#-sequence-diagrams)
-- [Data Flow](#-data-flow)
-- [Database Schema](#-database-schema)
-- [Getting Started](#-getting-started)
-- [API Reference](#-api-reference)
-- [Project Structure](#-project-structure)
-- [Environment Variables](#-environment-variables)
-- [License](#-license)
+- [Overview](#overview)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Backend Structure](#backend-structure)
+- [Multi-Agent Pipeline](#multi-agent-pipeline)
+- [Sequence Diagrams](#sequence-diagrams)
+- [Data Flow](#data-flow)
+- [Database Schema](#database-schema)
+- [Getting Started](#getting-started)
+- [API Reference](#api-reference)
+- [Project Structure](#project-structure)
+- [Environment Variables](#environment-variables)
+- [License](#license)
 
 ---
 
-## ≡ƒîƒ Overview
+## Overview
 
-**IdeaEvaluator** is a full-stack startup evaluation platform that leverages Microsoft's **AutoGen v0.7** multi-agent framework to orchestrate 7 specialized AI agents. Each agent analyzes a different domain of a startup ΓÇö from financial viability to investor fit ΓÇö producing a comprehensive, investment-grade evaluation report.
+**IdeaEvaluator** is a full-stack startup evaluation platform that leverages Microsoft's **AutoGen v0.7** multi-agent framework to orchestrate 7 specialized AI agents. Each agent analyzes a different domain of a startup -- from financial viability to investor fit -- producing a structured multi-domain evaluation report.
 
 The platform features:
 - A **5-step evaluation form** for founders to submit their startup data
@@ -51,24 +51,24 @@ The platform features:
 
 ---
 
-## Γ£¿ Features
+## Features
 
 | Feature | Description |
 |---|---|
-| ≡ƒñû **7-Agent AI Analysis** | Parallel multi-agent evaluation across Financial, Market, Competition, Risk, Longevity, Validation, and Investor Fit domains |
-| ≡ƒô¥ **Smart Evaluation Form** | 5-step guided submission with auto-save, validation, and confidence scoring |
-| Γ£¿ **Magic Auto-Fill** | Paste a pitch deck and let AI extract structured data for the form |
-| ≡ƒôè **Interactive Reports** | Recharts-powered visualizations with radar charts, bar charts, and score breakdowns |
-| ≡ƒöÉ **Supabase Auth** | Email/password, magic link, and OAuth authentication with RLS policies |
-| ≡ƒæñ **Role-Based Views** | Founder dashboard (My Startups) vs Investor dashboard (Discover + Interests) |
-| ≡ƒîÖ **Dark/Light Mode** | Theme toggle with `next-themes` and system preference detection |
-| ΓÜí **Parallel Execution** | `asyncio.gather`-based parallel agent execution for faster evaluations |
-| ≡ƒ¢í∩╕Å **Error Isolation** | Individual agent failures don't crash the pipeline ΓÇö graceful degradation |
-| ≡ƒÆ╛ **Evaluation Persistence** | Reports stored in Supabase (PostgreSQL) with user ownership |
+| **7-Agent AI Analysis** | Parallel multi-agent evaluation across Financial, Market, Competition, Risk, Longevity, Validation, and Investor Fit domains |
+| **Smart Evaluation Form** | 5-step guided submission with auto-save, validation, and confidence scoring |
+| **Magic Auto-Fill** | Paste a pitch deck and let AI extract structured data for the form |
+| **Interactive Reports** | Recharts-powered visualizations with radar charts, bar charts, and score breakdowns |
+| **Supabase Auth** | Email/password, magic link, and OAuth authentication with RLS policies |
+| **Role-Based Views** | Founder dashboard (My Startups) vs Investor dashboard (Discover + Interests) |
+| **Dark/Light Mode** | Theme toggle with `next-themes` and system preference detection |
+| **Parallel Execution** | `asyncio.gather`-based parallel agent execution for faster evaluations |
+| **Error Isolation** | Individual agent failures don't crash the pipeline -- graceful degradation |
+| **Evaluation Persistence** | Reports stored in Supabase (PostgreSQL) with user ownership |
 
 ---
 
-## ≡ƒ¢á∩╕Å Tech Stack
+## Tech Stack
 
 ### Frontend
 
@@ -109,13 +109,13 @@ The platform features:
 
 ---
 
-## ≡ƒÅù∩╕Å Architecture
+## Architecture
 
 ### High-Level System Architecture
 
 ```mermaid
 graph TB
-    subgraph "Frontend ΓÇö Next.js 16"
+    subgraph "Frontend -- Next.js 16"
         UI[React UI Components]
         EF[Evaluation Form<br/>5-Step Wizard]
         RP[Report Page<br/>Charts & Visualizations]
@@ -123,7 +123,7 @@ graph TB
         AUTH[Supabase Auth<br/>Login / Signup / Magic Link]
     end
 
-    subgraph "Backend ΓÇö FastAPI"
+    subgraph "Backend -- FastAPI"
         API[FastAPI Server<br/>:8000]
         EXT[Extraction Service<br/>Magic Auto-Fill]
         ORCH[AutoGen Orchestrator<br/>Pipeline Controller]
@@ -167,35 +167,35 @@ The backend follows an **8-layer architecture** for clean separation of concerns
 
 ```mermaid
 graph LR
-    subgraph "Layer 1 ΓÇö Data & Schemas"
+    subgraph "Layer 1 -- Data & Schemas"
         L1[Pydantic Models<br/>StartupContext, FinancialRawInput]
     end
     
-    subgraph "Layer 2 ΓÇö LLM Configuration"
+    subgraph "Layer 2 -- LLM Configuration"
         L2[Groq Config<br/>Llama 3.3 70B, temp=0.2]
     end
     
-    subgraph "Layer 3 ΓÇö Agent Framework"
+    subgraph "Layer 3 -- Agent Framework"
         L3[Base Agent<br/>Template Method Pattern]
     end
     
-    subgraph "Layer 4 ΓÇö Specialist Agents"
+    subgraph "Layer 4 -- Specialist Agents"
         L4[7 AutoGen Agents<br/>Each with System Prompts]
     end
     
-    subgraph "Layer 5 ΓÇö Orchestration"
+    subgraph "Layer 5 -- Orchestration"
         L5[Orchestrator<br/>Pipeline Control + Parallel Execution]
     end
     
-    subgraph "Layer 6 ΓÇö Scoring"
+    subgraph "Layer 6 -- Scoring"
         L6[Scoring Engine<br/>Weighted Deterministic Score]
     end
     
-    subgraph "Layer 7 ΓÇö Reporting"
+    subgraph "Layer 7 -- Reporting"
         L7[Report Builder<br/>Structured Report Assembly]
     end
     
-    subgraph "Layer 8 ΓÇö Persistence"
+    subgraph "Layer 8 -- Persistence"
         L8[Evaluation Repository<br/>Supabase/PostgreSQL]
     end
 
@@ -204,69 +204,69 @@ graph LR
 
 ---
 
-## ≡ƒôü Backend Structure
+## Backend Structure
 
 ```
 backend/
-Γö£ΓöÇΓöÇ __init__.py
-Γö£ΓöÇΓöÇ main.py                         # FastAPI app entry, /evaluate & /extract endpoints
-Γö£ΓöÇΓöÇ models.py                       # All Pydantic models (Input + Agent Output schemas)
-Γö£ΓöÇΓöÇ llm_config.py                   # Groq LLM configuration (model, temp, max_tokens)
-Γö£ΓöÇΓöÇ extraction_service.py           # Magic Auto-Fill ΓÇö extracts structured data from text
-Γö£ΓöÇΓöÇ finance_engine.py               # Pre-computes financial metrics before agent analysis
-Γöé
-Γö£ΓöÇΓöÇ agents/                         # Layer 3-4: Agent Framework
-Γöé   Γö£ΓöÇΓöÇ __init__.py
-Γöé   Γö£ΓöÇΓöÇ base_agent.py               # Abstract base with Template Method pattern
-Γöé   Γö£ΓöÇΓöÇ autogen_registry.py         # Factory ΓÇö initializes all 7 agents + user proxy
-Γöé   Γö£ΓöÇΓöÇ autogen_utils.py            # Model client creation, prompt loading
-Γöé   Γö£ΓöÇΓöÇ production_agent.py         # Production-grade wrapper with retries
-Γöé   Γö£ΓöÇΓöÇ validator_agent.py          # Data consistency & completeness checker
-Γöé   Γö£ΓöÇΓöÇ financial_agent.py          # Financial health analysis
-Γöé   Γö£ΓöÇΓöÇ market_agent.py             # TAM/SAM/SOM & market growth estimation
-Γöé   Γö£ΓöÇΓöÇ competition_agent.py        # Competitive landscape & novelty scoring
-Γöé   Γö£ΓöÇΓöÇ risk_agent.py               # Risk identification & severity scoring
-Γöé   Γö£ΓöÇΓöÇ longevity_agent.py          # 3yr/5yr survival probability prediction
-Γöé   ΓööΓöÇΓöÇ investor_fit_agent.py       # Investor type & stage matching
-Γöé
-Γö£ΓöÇΓöÇ orchestrator/                   # Layer 5: Pipeline Orchestration
-Γöé   Γö£ΓöÇΓöÇ __init__.py
-Γöé   Γö£ΓöÇΓöÇ autogen_orchestrator.py     # Main pipeline controller (5-step execution)
-Γöé   Γö£ΓöÇΓöÇ autogen_execution_wrapper.py # Single-agent async executor with error isolation
-Γöé   Γö£ΓöÇΓöÇ autogen_parallel_executor.py # asyncio.gather wrapper for parallel agents
-Γöé   Γö£ΓöÇΓöÇ autogen_context_builder.py  # Immutable context merging for downstream agents
-Γöé   ΓööΓöÇΓöÇ autogen_result_aggregator.py # Packages all outputs into final result
-Γöé
-Γö£ΓöÇΓöÇ prompts/                        # Agent system prompts (text files)
-Γöé   Γö£ΓöÇΓöÇ validator_system.txt
-Γöé   Γö£ΓöÇΓöÇ financial_system.txt
-Γöé   Γö£ΓöÇΓöÇ market_system.txt
-Γöé   Γö£ΓöÇΓöÇ competition_system.txt
-Γöé   Γö£ΓöÇΓöÇ risk_system.txt
-Γöé   Γö£ΓöÇΓöÇ longevity_system.txt
-Γöé   ΓööΓöÇΓöÇ investor_fit_system.txt
-Γöé
-Γö£ΓöÇΓöÇ schemas/                        # JSON Schema definitions
-Γöé   Γö£ΓöÇΓöÇ StartupContext.json
-Γöé   Γö£ΓöÇΓöÇ FinancialRawInput.json
-Γöé   Γö£ΓöÇΓöÇ FinancialMetricsOutput.json
-Γöé   Γö£ΓöÇΓöÇ MarketOutput.json
-Γöé   Γö£ΓöÇΓöÇ RiskOutput.json
-Γöé   ΓööΓöÇΓöÇ ReportOutput.json
-Γöé
-Γö£ΓöÇΓöÇ scoring/                        # Layers 6-8: Post-Processing
-Γöé   Γö£ΓöÇΓöÇ __init__.py
-Γöé   Γö£ΓöÇΓöÇ scoring_engine.py           # Deterministic weighted scoring (no LLM)
-Γöé   Γö£ΓöÇΓöÇ report_builder.py           # Structured report assembly (no LLM)
-Γöé   Γö£ΓöÇΓöÇ evaluation_service.py       # Integration layer (Score ΓåÆ Report ΓåÆ Persist)
-Γöé   ΓööΓöÇΓöÇ evaluation_repository.py    # Supabase persistence with dry-run mode
-Γöé
-ΓööΓöÇΓöÇ tests/                          # Test suite
+|-- __init__.py
+|-- main.py                         # FastAPI app entry, /evaluate & /extract endpoints
+|-- models.py                       # All Pydantic models (Input + Agent Output schemas)
+|-- llm_config.py                   # Groq LLM configuration (model, temp, max_tokens)
+|-- extraction_service.py           # Magic Auto-Fill -- extracts structured data from text
+|-- finance_engine.py               # Pre-computes financial metrics before agent analysis
+|
+|-- agents/                         # Layer 3-4: Agent Framework
+|   |-- __init__.py
+|   |-- base_agent.py               # Abstract base with Template Method pattern
+|   |-- autogen_registry.py         # Factory -- initializes all 7 agents + user proxy
+|   |-- autogen_utils.py            # Model client creation, prompt loading
+|   |-- production_agent.py         # Production-grade wrapper with retries
+|   |-- validator_agent.py          # Data consistency & completeness checker
+|   |-- financial_agent.py          # Financial health analysis
+|   |-- market_agent.py             # TAM/SAM/SOM & market growth estimation
+|   |-- competition_agent.py        # Competitive landscape & novelty scoring
+|   |-- risk_agent.py               # Risk identification & severity scoring
+|   |-- longevity_agent.py          # 3yr/5yr survival likelihood estimation based on upstream analysis
+|   |-- investor_fit_agent.py       # Investor type & stage matching
+|
+|-- orchestrator/                   # Layer 5: Pipeline Orchestration
+|   |-- __init__.py
+|   |-- autogen_orchestrator.py     # Main pipeline controller (5-step execution)
+|   |-- autogen_execution_wrapper.py # Single-agent async executor with error isolation
+|   |-- autogen_parallel_executor.py # asyncio.gather wrapper for parallel agents
+|   |-- autogen_context_builder.py  # Immutable context merging for downstream agents
+|   |-- autogen_result_aggregator.py # Packages all outputs into final result
+|
+|-- prompts/                        # Agent system prompts (text files)
+|   |-- validator_system.txt
+|   |-- financial_system.txt
+|   |-- market_system.txt
+|   |-- competition_system.txt
+|   |-- risk_system.txt
+|   |-- longevity_system.txt
+|   |-- investor_fit_system.txt
+|
+|-- schemas/                        # JSON Schema definitions
+|   |-- StartupContext.json
+|   |-- FinancialRawInput.json
+|   |-- FinancialMetricsOutput.json
+|   |-- MarketOutput.json
+|   |-- RiskOutput.json
+|   |-- ReportOutput.json
+|
+|-- scoring/                        # Layers 6-8: Post-Processing
+|   |-- __init__.py
+|   |-- scoring_engine.py           # Deterministic weighted scoring (no LLM)
+|   |-- report_builder.py           # Structured report assembly (no LLM)
+|   |-- evaluation_service.py       # Integration layer (Score -> Report -> Persist)
+|   |-- evaluation_repository.py    # Supabase persistence with dry-run mode
+|
+|-- tests/                          # Test suite
 ```
 
 ---
 
-## ≡ƒñû Multi-Agent Pipeline
+## Multi-Agent Pipeline
 
 The evaluation pipeline uses **7 specialist AutoGen agents** orchestrated in a deterministic, dependency-aware order:
 
@@ -279,7 +279,7 @@ The evaluation pipeline uses **7 specialist AutoGen agents** orchestrated in a d
 | **Market** | Market Potential | TAM/SAM/SOM estimates, market growth score, trends | Raw input |
 | **Competition** | Competitive Landscape | Competitor risk score, novelty score, similar companies | Raw input |
 | **Risk** | Risk Assessment | Top risks, severity score, executive summary | Financial + Market + Competition |
-| **Longevity** | Survival Prediction | 3-year & 5-year survival probabilities, reasoning | All upstream agents |
+| **Longevity** | Survival Assessment | 3-year & 5-year survival probabilities, reasoning | All upstream agents |
 | **Investor Fit** | Investor Matching | Recommended investor type, stage, ticket size, domain analysis | All upstream agents |
 
 ### Pipeline Execution Order
@@ -288,30 +288,30 @@ The evaluation pipeline uses **7 specialist AutoGen agents** orchestrated in a d
 graph TD
     START([Evaluation Request]) --> STEP1
 
-    subgraph "Step 1 ΓÇö Sequential"
-        STEP1[≡ƒöì Validator Agent]
+    subgraph "Step 1 -- Sequential"
+        STEP1[Validator Agent]
     end
 
     STEP1 --> STEP2
 
-    subgraph "Step 2 ΓÇö Parallel Execution"
-        STEP2[≡ƒÆ░ Financial Agent]
-        STEP2B[≡ƒôê Market Agent]
-        STEP2C[ΓÜö∩╕Å Competition Agent]
+    subgraph "Step 2 -- Parallel Execution"
+        STEP2[Financial Agent]
+        STEP2B[Market Agent]
+        STEP2C[Competition Agent]
     end
 
     STEP2 & STEP2B & STEP2C --> STEP3
 
-    subgraph "Step 3 ΓÇö Parallel Execution"
-        STEP3[ΓÜá∩╕Å Risk Agent]
-        STEP3B[ΓÅ│ Longevity Agent]
-        STEP3C[≡ƒÄ» Investor Fit Agent]
+    subgraph "Step 3 -- Parallel Execution"
+        STEP3[Risk Agent]
+        STEP3B[Longevity Agent]
+        STEP3C[Investor Fit Agent]
     end
 
     STEP3 & STEP3B & STEP3C --> POST
 
-    subgraph "Post-Processing ΓÇö No LLM"
-        POST[≡ƒôè Scoring Engine] --> REPORT[≡ƒôä Report Builder] --> PERSIST[≡ƒÆ╛ Persistence]
+    subgraph "Post-Processing -- No LLM"
+        POST[Scoring Engine] --> REPORT[Report Builder] --> PERSIST[Persistence]
     end
 
     PERSIST --> DONE([Final Report])
@@ -329,13 +329,13 @@ The final investment score is calculated using a **deterministic weighted formul
 | Validation Quality | **20%** | Average of `data_consistency_score` + `completeness_score` |
 
 **Risk Label Classification:**
-- `LOW_RISK` ΓåÆ Final Score > 0.75
-- `MEDIUM_RISK` ΓåÆ Final Score > 0.50
-- `HIGH_RISK` ΓåÆ Final Score Γëñ 0.50
+- `LOW_RISK` -- Final Score > 0.75
+- `MEDIUM_RISK` -- Final Score > 0.50
+- `HIGH_RISK` -- Final Score <= 0.50
 
 ---
 
-## ≡ƒôè Sequence Diagrams
+## Sequence Diagrams
 
 ### 1. Full Evaluation Flow
 
@@ -368,13 +368,13 @@ sequenceDiagram
 
     API->>ORCH: run_full_evaluation(context)
 
-    Note over ORCH: Step 1 ΓÇö Sequential
+    Note over ORCH: Step 1 -- Sequential
     ORCH->>VA: Execute with startup context
     VA->>LLM: System prompt + context
     LLM-->>VA: JSON response
     VA-->>ORCH: ValidatorOutput
 
-    Note over ORCH: Step 2 ΓÇö Parallel
+    Note over ORCH: Step 2 -- Parallel
     par Financial Analysis
         ORCH->>FA: Execute with startup context
         FA->>LLM: System prompt + context
@@ -392,13 +392,13 @@ sequenceDiagram
         CA-->>ORCH: CompetitionOutput
     end
 
-    Note over ORCH: Step 3 ΓÇö Parallel (with upstream context)
+    Note over ORCH: Step 3 -- Parallel (with upstream context)
     par Risk Assessment
         ORCH->>RA: Execute with merged context
         RA->>LLM: System prompt + upstream data
         LLM-->>RA: JSON response
         RA-->>ORCH: RiskAssessmentOutput
-    and Longevity Prediction
+    and Longevity Assessment
         ORCH->>LA: Execute with merged context
         LA->>LLM: System prompt + upstream data
         LLM-->>LA: JSON response
@@ -443,7 +443,7 @@ sequenceDiagram
     LLM-->>EXT: Structured JSON
     EXT-->>API: Extracted fields
     API-->>UI: {startupName, industry, stage, ...}
-    UI-->>Founder: Form auto-populated Γ£¿
+    UI-->>Founder: Form auto-populated
 ```
 
 ### 3. Authentication Flow
@@ -462,7 +462,7 @@ sequenceDiagram
     UI->>UI: Store session (cookies)
 
     User->>UI: Navigate to /dashboard
-    MW->>SB: getUser() ΓÇö verify session
+    MW->>SB: getUser() -- verify session
     SB-->>MW: User object (with role)
 
     alt Role = Founder
@@ -503,9 +503,9 @@ sequenceDiagram
 
 ---
 
-## ≡ƒöä Data Flow
+## Data Flow
 
-### Class Diagram ΓÇö Pydantic Models
+### Class Diagram -- Pydantic Models
 
 ```mermaid
 classDiagram
@@ -609,7 +609,7 @@ classDiagram
 
 ---
 
-## ≡ƒùä∩╕Å Database Schema
+## Database Schema
 
 ```mermaid
 erDiagram
@@ -659,7 +659,7 @@ erDiagram
 
 ---
 
-## ≡ƒÜÇ Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -722,7 +722,7 @@ The app will be available at:
 
 ---
 
-## ≡ƒôí API Reference
+## API Reference
 
 ### `GET /`
 Health check endpoint.
@@ -803,63 +803,63 @@ Run the full 7-agent evaluation pipeline. Requires authentication.
 
 ---
 
-## ≡ƒôé Project Structure
+## Project Structure
 
 ```
 ideaevaluator/
-Γö£ΓöÇΓöÇ app/                          # Next.js App Router
-Γöé   Γö£ΓöÇΓöÇ (auth)/                   # Auth pages (login, signup, magic-link)
-Γöé   Γö£ΓöÇΓöÇ (dashboard)/              # Protected dashboard routes
-Γöé   Γöé   Γö£ΓöÇΓöÇ page.jsx              # Dashboard home
-Γöé   Γöé   Γö£ΓöÇΓöÇ evaluate/             # Evaluation form page
-Γöé   Γöé   Γö£ΓöÇΓöÇ reports/              # Report viewing page
-Γöé   Γöé   Γö£ΓöÇΓöÇ discover/             # Investor discovery page
-Γöé   Γöé   Γö£ΓöÇΓöÇ interests/            # Investor interests page
-Γöé   Γöé   Γö£ΓöÇΓöÇ startups/             # Founder's startups page
-Γöé   Γöé   ΓööΓöÇΓöÇ settings/             # User settings page
-Γöé   Γö£ΓöÇΓöÇ auth/                     # Auth callback handler
-Γöé   Γö£ΓöÇΓöÇ globals.css               # Global styles & design tokens
-Γöé   ΓööΓöÇΓöÇ layout.js                 # Root layout with providers
-Γöé
-Γö£ΓöÇΓöÇ components/                   # React components
-Γöé   Γö£ΓöÇΓöÇ auth/                     # Auth forms and guards
-Γöé   Γö£ΓöÇΓöÇ charts/                   # Recharts visualizations
-Γöé   Γö£ΓöÇΓöÇ evaluate/                 # Multi-step evaluation form
-Γöé   Γö£ΓöÇΓöÇ layout/                   # Sidebar, header, navigation
-Γöé   Γö£ΓöÇΓöÇ report/                   # Report sections and cards
-Γöé   ΓööΓöÇΓöÇ ui/                       # shadcn/ui primitives
-Γöé
-Γö£ΓöÇΓöÇ lib/                          # Shared utilities
-Γöé   Γö£ΓöÇΓöÇ supabase/                 # Supabase client (browser + server)
-Γöé   ΓööΓöÇΓöÇ utils.js                  # General helpers
-Γöé
-Γö£ΓöÇΓöÇ backend/                      # Python FastAPI backend
-Γöé   Γö£ΓöÇΓöÇ agents/                   # 7 specialist AI agents
-Γöé   Γö£ΓöÇΓöÇ orchestrator/             # Multi-agent pipeline control
-Γöé   Γö£ΓöÇΓöÇ prompts/                  # Agent system prompts
-Γöé   Γö£ΓöÇΓöÇ schemas/                  # JSON Schema definitions
-Γöé   Γö£ΓöÇΓöÇ scoring/                  # Scoring + Reporting + Persistence
-Γöé   ΓööΓöÇΓöÇ tests/                    # Test suite
-Γöé
-Γö£ΓöÇΓöÇ middleware.js                  # Next.js auth middleware
-Γö£ΓöÇΓöÇ package.json                  # Frontend dependencies
-Γö£ΓöÇΓöÇ requirements.txt              # Backend dependencies
-ΓööΓöÇΓöÇ next.config.mjs               # Next.js configuration
+|-- app/                          # Next.js App Router
+|   |-- (auth)/                   # Auth pages (login, signup, magic-link)
+|   |-- (dashboard)/              # Protected dashboard routes
+|   |   |-- page.jsx              # Dashboard home
+|   |   |-- evaluate/             # Evaluation form page
+|   |   |-- reports/              # Report viewing page
+|   |   |-- discover/             # Investor discovery page
+|   |   |-- interests/            # Investor interests page
+|   |   |-- startups/             # Founder's startups page
+|   |   |-- settings/             # User settings page
+|   |-- auth/                     # Auth callback handler
+|   |-- globals.css               # Global styles & design tokens
+|   |-- layout.js                 # Root layout with providers
+|
+|-- components/                   # React components
+|   |-- auth/                     # Auth forms and guards
+|   |-- charts/                   # Recharts visualizations
+|   |-- evaluate/                 # Multi-step evaluation form
+|   |-- layout/                   # Sidebar, header, navigation
+|   |-- report/                   # Report sections and cards
+|   |-- ui/                       # shadcn/ui primitives
+|
+|-- lib/                          # Shared utilities
+|   |-- supabase/                 # Supabase client (browser + server)
+|   |-- utils.js                  # General helpers
+|
+|-- backend/                      # Python FastAPI backend
+|   |-- agents/                   # 7 specialist AI agents
+|   |-- orchestrator/             # Multi-agent pipeline control
+|   |-- prompts/                  # Agent system prompts
+|   |-- schemas/                  # JSON Schema definitions
+|   |-- scoring/                  # Scoring + Reporting + Persistence
+|   |-- tests/                    # Test suite
+|
+|-- middleware.js                  # Next.js auth middleware
+|-- package.json                  # Frontend dependencies
+|-- requirements.txt              # Backend dependencies
+|-- next.config.mjs               # Next.js configuration
 ```
 
 ---
 
-## ≡ƒöÉ Environment Variables
+## Environment Variables
 
 | Variable | Required | Description |
 |---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Γ£à | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Γ£à | Supabase anonymous/public key |
-| `GROQ_API_KEY` | Γ£à | Groq Cloud API key for LLM inference |
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anonymous/public key |
+| `GROQ_API_KEY` | Yes | Groq Cloud API key for LLM inference |
 
 ---
 
-## ≡ƒñ¥ Contributing
+## Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -869,12 +869,12 @@ ideaevaluator/
 
 ---
 
-## ≡ƒôä License
+## License
 
 This project is private and proprietary.
 
 ---
 
 <p align="center">
-  Built with Γ¥ñ∩╕Å using <strong>Next.js</strong>, <strong>AutoGen</strong>, <strong>FastAPI</strong>, and <strong>Groq</strong>
+  Built with Next.js, AutoGen, FastAPI, and Groq
 </p>
