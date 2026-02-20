@@ -49,7 +49,8 @@ class AutoGenEvaluationOrchestrator:
             raise ValueError(f"Missing required agents: {missing}")
 
     async def run_full_evaluation(
-        self, startup_context: Dict[str, Any]
+        self, startup_context: Dict[str, Any],
+        progress_callback=None
     ) -> Dict[str, Any]:
         """
         Execute the full evaluation pipeline.
@@ -57,21 +58,33 @@ class AutoGenEvaluationOrchestrator:
         Args:
             startup_context: Dictionary containing startup data
                              (StartupContext + FinancialRawInput serialized).
+            progress_callback: Optional async callable(agent_name, status).
+                               Called at each step boundary for real-time progress.
 
         Returns:
             Final orchestration result with all agent outputs.
         """
+        async def _notify(agent: str, status: str):
+            if progress_callback:
+                await progress_callback(agent, status)
+
         started_at = datetime.now(timezone.utc).isoformat()
         agent_outputs: Dict[str, Any] = {}
 
         # ── Step 1: Validator ─────────────────────────────────
+        await _notify("validator", "running")
         validator_output = await execute_autogen_agent(
             self.agents["evaluator_validator"],
             startup_context
         )
         agent_outputs["validator"] = validator_output
+        await _notify("validator", "completed")
 
         # ── Step 2: Parallel Core Agents ──────────────────────
+        await _notify("financial", "running")
+        await _notify("market", "running")
+        await _notify("competition", "running")
+
         parallel_results = await run_autogen_parallel([
             execute_autogen_agent(
                 self.agents["evaluator_financial"],
@@ -94,6 +107,10 @@ class AutoGenEvaluationOrchestrator:
         agent_outputs["financial"] = financial_output
         agent_outputs["market"] = market_output
         agent_outputs["competition"] = competition_output
+
+        await _notify("financial", "completed")
+        await _notify("market", "completed")
+        await _notify("competition", "completed")
 
         # ── Step 3: Parallel Advanced Agents (Risk, Longevity, Investor) ──────
         # Optimized: These now run in parallel, using only the base data.
@@ -122,6 +139,10 @@ class AutoGenEvaluationOrchestrator:
             "competition": competition_output,
         })
 
+        await _notify("risk", "running")
+        await _notify("longevity", "running")
+        await _notify("investor_fit", "running")
+
         advanced_results = await run_autogen_parallel([
             execute_autogen_agent(self.agents["evaluator_risk"], risk_ctx),
             execute_autogen_agent(self.agents["evaluator_longevity"], longevity_ctx),
@@ -131,6 +152,10 @@ class AutoGenEvaluationOrchestrator:
         agent_outputs["risk"] = advanced_results[0]
         agent_outputs["longevity"] = advanced_results[1]
         agent_outputs["investor_fit"] = advanced_results[2]
+
+        await _notify("risk", "completed")
+        await _notify("longevity", "completed")
+        await _notify("investor_fit", "completed")
 
         # ── Aggregate ─────────────────────────────────────────
         return build_orchestration_result(agent_outputs, started_at)

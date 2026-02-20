@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { FileText, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EvaluationForm } from "@/components/evaluate/evaluation-form";
+import { AgentProgressPanel } from "@/components/evaluate/AgentProgressPanel";
 import { useAuth } from "@/lib/auth-context";
 import Link from "next/link";
 
@@ -13,12 +14,15 @@ export default function EvaluatePage() {
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [result, setResult] = React.useState(null);
     const [error, setError] = React.useState(null);
+    const [agentStatuses, setAgentStatuses] = React.useState({});
 
     const handleSubmit = async (data) => {
         setIsSubmitting(true);
         setError(null);
+        setAgentStatuses({});
+
         try {
-            const response = await fetch("/api/py/evaluate", {
+            const response = await fetch("/api/py/evaluate-stream", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -37,8 +41,60 @@ export default function EvaluatePage() {
                 );
             }
 
-            const resultData = await response.json();
-            setResult(resultData);
+            // Parse SSE stream
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+
+                // Process complete SSE events (separated by double newlines)
+                const events = buffer.split("\n\n");
+                buffer = events.pop(); // Keep incomplete event in buffer
+
+                for (const eventStr of events) {
+                    if (!eventStr.trim()) continue;
+
+                    const lines = eventStr.split("\n");
+                    let eventType = "";
+                    let eventData = "";
+
+                    for (const line of lines) {
+                        if (line.startsWith("event: ")) {
+                            eventType = line.slice(7);
+                        } else if (line.startsWith("data: ")) {
+                            eventData = line.slice(6);
+                        }
+                    }
+
+                    if (!eventType || !eventData) continue;
+
+                    try {
+                        const parsed = JSON.parse(eventData);
+
+                        if (eventType === "progress") {
+                            setAgentStatuses((prev) => ({
+                                ...prev,
+                                [parsed.step]: parsed.status,
+                            }));
+                        } else if (eventType === "result") {
+                            setResult(parsed);
+                        } else if (eventType === "error") {
+                            throw new Error(parsed.detail || "Evaluation failed");
+                        }
+                    } catch (parseErr) {
+                        if (parseErr.message !== "Evaluation failed" && !parseErr.message.includes("failed")) {
+                            console.error("Failed to parse SSE event:", parseErr);
+                        } else {
+                            throw parseErr;
+                        }
+                    }
+                }
+            }
         } catch (err) {
             console.error(err);
             setError(err.message);
@@ -89,7 +145,7 @@ export default function EvaluatePage() {
                         result._persistence && !result._persistence.saved && (
                             <div className="mt-6 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-sm text-left">
                                 <strong className="flex items-center gap-2">
-                                    <span className="text-lg">⚠️</span> Warning: Report Not Saved
+                                    <span className="text-lg">Warning:</span> Report Not Saved
                                 </strong>
                                 <p className="mt-1 opacity-90">
                                     This evaluation was generated successfully but could not be saved to the database.
@@ -118,21 +174,21 @@ export default function EvaluatePage() {
         );
     }
 
+    /* ── submitting state — show agent progress panel ── */
+    if (isSubmitting) {
+        return (
+            <div className="max-w-6xl mx-auto pt-10">
+                <AgentProgressPanel
+                    agentStatuses={agentStatuses}
+                    error={error}
+                />
+            </div>
+        );
+    }
+
     /* ── form state ───────────────────────────────────── */
     return (
         <div className="max-w-6xl mx-auto relative">
-            {/* loading overlay */}
-            {isSubmitting && (
-                <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center rounded-xl">
-                    <div className="flex flex-col items-center gap-3">
-                        <div className="h-7 w-7 border-[3px] border-primary border-t-transparent rounded-full animate-spin" />
-                        <p className="text-sm text-muted-foreground animate-pulse">
-                            Orchestrating AI Agents…
-                        </p>
-                    </div>
-                </div>
-            )}
-
             {/* header */}
             <motion.div
                 initial={{ opacity: 0 }}
@@ -160,10 +216,10 @@ export default function EvaluatePage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
-                className={isSubmitting ? "opacity-50 pointer-events-none" : ""}
             >
                 <EvaluationForm onSubmit={handleSubmit} />
             </motion.div>
         </div>
     );
 }
+

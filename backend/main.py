@@ -200,3 +200,154 @@ async def evaluate_startup(request: EvaluationRequest, raw_request: Request):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+# ── SSE Streaming Evaluation Endpoint ──────────────────────
+from fastapi.responses import StreamingResponse
+import asyncio as _asyncio
+
+
+@app.post("/evaluate-stream")
+async def evaluate_startup_stream(request: EvaluationRequest, raw_request: Request):
+    """
+    SSE streaming version of /evaluate.
+    Streams real-time agent progress events, then the final report.
+    """
+    async def event_generator():
+        try:
+            # 0. Setup Authenticated Supabase Client
+            auth_header = raw_request.headers.get("Authorization")
+            token = auth_header.split(" ")[1] if auth_header and "Bearer" in auth_header else None
+
+            request_supabase = supabase
+            if token and supabase:
+                request_supabase = create_client(url, key)
+                request_supabase.postgrest.auth(token)
+
+            # Validate input
+            try:
+                startup_ctx = StartupContext(**request.startup_context)
+                financial_input = FinancialRawInput(
+                    startup_id=startup_ctx.startup_id,
+                    **request.financial_raw_input
+                )
+            except Exception as e:
+                yield f"event: error\ndata: {json.dumps({'detail': f'Input validation failed: {str(e)}'})}\n\n"
+                return
+
+            # Persist startup
+            if request_supabase:
+                try:
+                    qualitative = request.qualitative or {}
+                    startup_row = {
+                        "id": str(startup_ctx.startup_id),
+                        "name": startup_ctx.name,
+                        "industry": startup_ctx.industry,
+                        "stage": startup_ctx.stage,
+                        "description": startup_ctx.description,
+                        "website": startup_ctx.website,
+                        "tagline": startup_ctx.description,
+                        "sector": startup_ctx.industry,
+                        "about": qualitative.get("problem_description", startup_ctx.description),
+                        "product": qualitative.get("product_description", ""),
+                        "trending": False,
+                    }
+                    if request.user_id:
+                        startup_row["founder_id"] = request.user_id
+                    request_supabase.table("startups").upsert(
+                        startup_row, on_conflict="id"
+                    ).execute()
+                except Exception as e:
+                    print(f"Warning: Failed to save startup: {e}")
+
+            # Progress callback for SSE
+            async def on_progress(agent_name: str, status: str):
+                data = json.dumps({"step": agent_name, "status": status})
+                yield_str = f"event: progress\ndata: {data}\n\n"
+                progress_events.append(yield_str)
+
+            progress_events = []
+
+            # Initialize agents and orchestrator
+            agents = initialize_agents()
+            orchestrator = AutoGenEvaluationOrchestrator(agents=agents)
+
+            full_context = {
+                "startup_context": startup_ctx.model_dump(mode="json"),
+                "financial_input": financial_input.model_dump(mode="json"),
+                "qualitative": request.qualitative,
+                "metadata": request.metadata
+            }
+
+            # We need a different approach since we can't yield from a nested callback.
+            # Use an asyncio.Queue to bridge the orchestrator callback with the generator.
+            progress_queue = _asyncio.Queue()
+
+            async def queue_progress(agent_name: str, status: str):
+                await progress_queue.put({"step": agent_name, "status": status})
+
+            # Run orchestration in a background task
+            result_holder = {}
+
+            async def run_orchestration():
+                try:
+                    result = await orchestrator.run_full_evaluation(
+                        startup_context=full_context,
+                        progress_callback=queue_progress
+                    )
+
+                    if "error" in result:
+                        result_holder["error"] = result["error"]
+                    else:
+                        # Post-processing
+                        await progress_queue.put({"step": "scoring", "status": "running"})
+                        evaluation_service = EvaluationService(supabase_client=request_supabase)
+                        final_report = await evaluation_service.evaluate(
+                            startup_id=str(startup_ctx.startup_id),
+                            orchestration_output=result,
+                            startup_name=startup_ctx.name,
+                            user_id=request.user_id
+                        )
+                        await progress_queue.put({"step": "scoring", "status": "completed"})
+                        result_holder["report"] = final_report
+                except Exception as e:
+                    import traceback
+                    traceback.print_exc()
+                    result_holder["error"] = str(e)
+                finally:
+                    await progress_queue.put(None)  # Signal completion
+
+            # Start orchestration as background task
+            task = _asyncio.create_task(run_orchestration())
+
+            # Yield progress events as they arrive
+            while True:
+                item = await progress_queue.get()
+                if item is None:
+                    break
+                data = json.dumps(item)
+                yield f"event: progress\ndata: {data}\n\n"
+
+            # Wait for task to fully complete
+            await task
+
+            # Yield final result or error
+            if "error" in result_holder:
+                yield f"event: error\ndata: {json.dumps({'detail': result_holder['error']})}\n\n"
+            elif "report" in result_holder:
+                yield f"event: result\ndata: {json.dumps(result_holder['report'], default=str)}\n\n"
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            yield f"event: error\ndata: {json.dumps({'detail': str(e)})}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        }
+    )
