@@ -1,0 +1,14 @@
+{
+    "rewrites": [
+        {
+            "source": "/api/py/:path*",
+            "destination": "/api/py/:path*"
+        }
+    ],
+    "functions": {
+        "api/py/**/*.py": {
+            "runtime": "@vercel/python@4.6.0",
+            "maxDuration": 60
+        }
+    }
+}
