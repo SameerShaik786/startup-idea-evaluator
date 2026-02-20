@@ -38,12 +38,21 @@ No explanation text outside JSON.
 
 Return EXACTLY this structure:
 {
- "competitor_risk_score": number,
- "novelty_score": number,
- "similar_companies": string[],
- "agent_name": string,
- "agent_version": string,
- "model_name": string,
+ "competitor_risk_score": number, // 0-1
+ "novelty_score": number,         // 0-1
+ "competitors": [
+    {
+       "name": string,
+       "description": string,
+       "threat_level": string // "High", "Medium", "Low"
+    }
+ ],
+ "innovation_score": number,   // 0-100 score for Radar Chart
+ "market_share_score": number, // 0-100 score (Potential)
+ "brand_score": number,        // 0-100 score (Potential)
+ "pricing_score": number,      // 0-100 score (Strategy strength)
+ "product_score": number,      // 0-100 score (Differentiation)
+ "reasoning": string,          // Detailed analysis of moat and defense strategy
  "confidence_score": number
 }
 

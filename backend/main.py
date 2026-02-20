@@ -62,8 +62,31 @@ async def root():
     return {"status": "ok", "service": "IdeaEvaluator Backend"}
 
 
+from fastapi import FastAPI, HTTPException, Body, Request
+from backend.extraction_service import ExtractionService
+
+# ... imports ...
+
+@app.post("/extract")
+async def extract_info(payload: Dict[str, str] = Body(...)):
+    """
+    Extract structured startup info from unstructured text.
+    Payload: { "text": "pitch deck text..." }
+    """
+    text = payload.get("text")
+    if not text:
+        raise HTTPException(status_code=400, detail="Text is required")
+    
+    try:
+        service = ExtractionService()
+        result = await service.extract_startup_info(text)
+        return result
+    except Exception as e:
+        print(f"❌ Extraction service failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/evaluate")
-async def evaluate_startup(request: EvaluationRequest):
+async def evaluate_startup(request: EvaluationRequest, raw_request: Request):
     """
     Run the full evaluation pipeline:
     1. Orchestrate agents (Validator -> Parallel -> Risk -> Longevity -> InvestorFit)
@@ -71,19 +94,29 @@ async def evaluate_startup(request: EvaluationRequest):
     3. Persist (Layer 8)
     """
     try:
-        # 1. Initialize Orchestrator
-        # We need to adapt the incoming request to what the orchestrator expects
-        # The orchestrator expects 'segments' dict.
-        # Let's map the 'qualitative' fields + others into the context segments.
+        # 0. Setup Authenticated Supabase Client
+        # We need to forward the user's JWT to Supabase to pass RLS policies.
+        auth_header = raw_request.headers.get("Authorization")
+        token = auth_header.split(" ")[1] if auth_header and "Bearer" in auth_header else None
+        
+        request_supabase = supabase  # Default to global (anon)
+        if token and supabase:
+            # Create a shallow copy or just auth the existing one?
+            # supabase-py doesn't support easy cloning with new auth.
+            # We'll create a new client instance for this request context if possible,
+            # OR we simply set the auth header on the postgrest client.
+            
+            # Using the client factory is safer
+            request_supabase = create_client(url, key)
+            request_supabase.postgrest.auth(token)
+            print("🔐 Supabase client authenticated with user token")
 
-        # Construct the context dictionary expected by AutoGenOrchestrator
-        # The Orchestrator uses:
-        # - StartupContext (pydantic)
-        # - FinancialRawInput (pydantic)
-        # - qualitative data (dict)
+        # 1. Initialize Orchestrator
+        # ...
+        
+        # ... validation ...
 
         # Validate basics with Pydantic models (fails fast if invalid)
-        # Note: The request.startup_context is a dict, we convert to Pydantic to validate
         try:
             startup_ctx = StartupContext(**request.startup_context)
             financial_input = FinancialRawInput(
@@ -95,8 +128,9 @@ async def evaluate_startup(request: EvaluationRequest):
 
         # ── Persist startup to `startups` table ──────────────────
         # So the startup appears on the Discover page
-        if supabase:
+        if request_supabase:
             try:
+                # ... (rest of logic uses request_supabase instead of supabase)
                 qualitative = request.qualitative or {}
                 startup_row = {
                     "id": str(startup_ctx.startup_id),
@@ -116,7 +150,7 @@ async def evaluate_startup(request: EvaluationRequest):
                 if request.user_id:
                     startup_row["founder_id"] = request.user_id
                 # Upsert: insert or update if name already exists
-                supabase.table("startups").upsert(
+                request_supabase.table("startups").upsert(
                     startup_row, on_conflict="id"
                 ).execute()
                 print(f"✅ Startup '{startup_ctx.name}' saved to startups table")
@@ -146,7 +180,8 @@ async def evaluate_startup(request: EvaluationRequest):
              raise HTTPException(status_code=500, detail=orchestration_result["error"])
 
         # Run Post-Processing Pipeline (Layers 6, 7, 8)
-        evaluation_service = EvaluationService(supabase_client=supabase)
+        # Use the authenticated client
+        evaluation_service = EvaluationService(supabase_client=request_supabase)
 
         final_report = await evaluation_service.evaluate(
             startup_id=str(startup_ctx.startup_id),

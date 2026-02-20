@@ -98,25 +98,38 @@ export default function StartupsPage() {
     const [evaluations, setEvaluations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
+    const [startupNameMap, setStartupNameMap] = useState({});
 
     useEffect(() => {
         async function fetchStartups() {
             try {
                 const supabase = createClient();
-                let query = supabase
+
+                // Build evaluations query
+                let evalQuery = supabase
                     .from("startup_evaluations")
-                    .select("*")
+                    .select("id, startup_id, final_score, created_at, user_id")
                     .order("created_at", { ascending: false });
 
-                // Founders only see their own evaluations
                 if (user?.id) {
-                    query = query.eq("user_id", user.id);
+                    evalQuery = evalQuery.eq("user_id", user.id);
                 }
 
-                const { data, error } = await query;
+                // Run BOTH queries in parallel
+                const [evalResult, startupResult] = await Promise.all([
+                    evalQuery,
+                    supabase.from("startups").select("id, name, description"),
+                ]);
 
-                if (error) throw error;
-                setEvaluations(data || []);
+                if (evalResult.error) throw evalResult.error;
+                setEvaluations(evalResult.data || []);
+
+                // Build name map from startups
+                const map = {};
+                (startupResult.data || []).forEach(s => {
+                    map[s.id] = { name: s.name, description: s.description };
+                });
+                setStartupNameMap(map);
             } catch (err) {
                 console.error("Error fetching startups:", err);
             } finally {
@@ -134,16 +147,10 @@ export default function StartupsPage() {
         const startupMap = new Map();
         evaluations.forEach(item => {
             if (!startupMap.has(item.startup_id)) {
-                const reportJson = item.report_json || {};
-                const name = reportJson.startup_name || item.startup_id || "Unknown";
+                const startupInfo = startupNameMap[item.startup_id];
+                const name = startupInfo?.name || item.startup_id || "Unknown";
                 const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-
-                let summary = "No summary available.";
-                if (typeof reportJson.summary === 'string') {
-                    summary = reportJson.summary;
-                } else if (reportJson.summary && typeof reportJson.summary === 'object') {
-                    summary = `Evaluation complete. Final score: ${Math.round(reportJson.summary.final_score)}`;
-                }
+                const summary = startupInfo?.description || "No summary available.";
 
                 startupMap.set(item.startup_id, {
                     id: item.startup_id,
@@ -151,14 +158,14 @@ export default function StartupsPage() {
                     description: summary,
                     initials: initials,
                     score: item.final_score || 0,
-                    sector: reportJson.metadata?.industry || "Tech",
-                    stage: reportJson.metadata?.stage || "Early",
+                    sector: "Tech",
+                    stage: "Early",
                     lastEvaluated: new Date(item.created_at).toLocaleDateString(),
                 });
             }
         });
         return Array.from(startupMap.values());
-    }, [evaluations]);
+    }, [evaluations, startupNameMap]);
 
     const filteredStartups = useMemo(() => {
         if (!searchQuery.trim()) return uniqueStartups;

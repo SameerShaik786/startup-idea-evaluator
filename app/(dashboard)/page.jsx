@@ -67,9 +67,8 @@ function StatBlock({ label, value, icon: Icon, index }) {
 
 /* ── recent row ───────────────────────────────────────── */
 function EvaluationRow({ item, index }) {
-    const reportJson = item.report_json || {};
     const name =
-        reportJson.startup_name || item.startup_id || "Unknown Startup";
+        item._startup_name || "Unknown Startup";
     const score = item.final_score ? Math.round(item.final_score) : null;
 
     return (
@@ -166,44 +165,67 @@ export default function DashboardPage() {
                 const supabase = createClient();
 
                 if (isFounder) {
-                    // Founders: fetch only THEIR evaluations
-                    const { data, error } = await supabase
-                        .from("startup_evaluations")
-                        .select("*")
-                        .eq("user_id", user.id)
-                        .order("created_at", { ascending: false });
-
-                    if (error) throw error;
-                    setEvaluations(data || []);
-                } else {
-                    // Investors: fetch their interests + interested startups
-                    const { data: interestData, error: intError } = await supabase
-                        .from("investor_interests")
-                        .select("startup_id, created_at")
-                        .eq("user_id", user.id)
-                        .order("created_at", { ascending: false });
-
-                    if (intError) throw intError;
-                    setInterests(interestData || []);
-
-                    if (interestData && interestData.length > 0) {
-                        const ids = interestData.map((i) => i.startup_id);
-                        const { data: startupData } = await supabase
+                    // Run evaluations + startups in PARALLEL
+                    const [evalResult, startupResult] = await Promise.all([
+                        supabase
+                            .from("startup_evaluations")
+                            .select("id, startup_id, final_score, created_at")
+                            .eq("user_id", user.id)
+                            .order("created_at", { ascending: false }),
+                        supabase
                             .from("startups")
-                            .select("*")
-                            .in("id", ids);
+                            .select("id, name")
+                            .eq("user_id", user.id),
+                    ]);
 
-                        setInterestedStartups(startupData || []);
+                    if (evalResult.error) throw evalResult.error;
+
+                    const nameMap = {};
+                    (startupResult.data || []).forEach(s => { nameMap[s.id] = s.name; });
+
+                    const enriched = (evalResult.data || []).map(e => ({
+                        ...e,
+                        _startup_name: nameMap[e.startup_id] || null,
+                    }));
+                    setEvaluations(enriched);
+                } else {
+                    // Run ALL three queries in PARALLEL
+                    const [interestResult, evalResult, startupResult] = await Promise.all([
+                        supabase
+                            .from("investor_interests")
+                            .select("startup_id, created_at")
+                            .eq("user_id", user.id)
+                            .order("created_at", { ascending: false }),
+                        supabase
+                            .from("startup_evaluations")
+                            .select("id, startup_id, final_score, created_at")
+                            .eq("user_id", user.id)
+                            .order("created_at", { ascending: false }),
+                        supabase
+                            .from("startups")
+                            .select("id, name, sector, stage, raise_amount"),
+                    ]);
+
+                    if (interestResult.error) throw interestResult.error;
+                    setInterests(interestResult.data || []);
+
+                    // Build startup lookup from the single startups query
+                    const startupMap = {};
+                    (startupResult.data || []).forEach(s => { startupMap[s.id] = s; });
+
+                    // Filter interested startups from the full list
+                    if (interestResult.data && interestResult.data.length > 0) {
+                        const interestedIds = new Set(interestResult.data.map(i => i.startup_id));
+                        const filtered = (startupResult.data || []).filter(s => interestedIds.has(s.id));
+                        setInterestedStartups(filtered);
                     }
 
-                    // Also fetch evaluations count for investors
-                    const { data: evalData } = await supabase
-                        .from("startup_evaluations")
-                        .select("*")
-                        .eq("user_id", user.id)
-                        .order("created_at", { ascending: false });
-
-                    setEvaluations(evalData || []);
+                    // Enrich evaluations with names
+                    const enriched = (evalResult.data || []).map(e => ({
+                        ...e,
+                        _startup_name: startupMap[e.startup_id]?.name || null,
+                    }));
+                    setEvaluations(enriched);
                 }
             } catch (err) {
                 console.error("Error fetching dashboard data:", err);

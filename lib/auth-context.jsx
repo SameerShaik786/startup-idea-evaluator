@@ -4,13 +4,13 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const AuthContext = createContext(undefined);
+const supabase = createClient();
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
     const [sessionInfo, setSessionInfo] = useState(null);
-    const supabase = createClient();
 
     useEffect(() => {
         // Get initial session
@@ -71,7 +71,7 @@ export function AuthProvider({ children }) {
         return () => {
             subscription.unsubscribe();
         };
-    }, [supabase]);
+    }, []);
 
     const extractSessionInfo = (session) => {
         if (!session) return;

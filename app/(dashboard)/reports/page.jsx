@@ -123,29 +123,38 @@ export default function ReportsPage() {
             if (!user?.id) return;
             try {
                 const supabase = createClient();
-                const userRole = (user?.user_metadata?.role || "investor").toLowerCase();
 
-                let query = supabase
-                    .from("startup_evaluations")
-                    .select("*")
-                    .order("created_at", { ascending: false });
+                // Run both queries in PARALLEL for speed
+                const [evalResult, startupResult] = await Promise.all([
+                    supabase
+                        .from("startup_evaluations")
+                        .select("id, startup_id, final_score, risk_label, created_at, user_id, report_json")
+                        .order("created_at", { ascending: false }),
+                    supabase
+                        .from("startups")
+                        .select("id, name, description"),
+                ]);
 
-                // Founders only see their own reports; investors see ALL
-                if (userRole === "founder") {
-                    query = query.eq("user_id", user.id);
-                }
+                if (evalResult.error) throw evalResult.error;
 
-                const { data, error } = await query;
+                // Build name lookup map
+                const nameMap = {};
+                (startupResult.data || []).forEach(s => {
+                    nameMap[s.id] = { name: s.name, description: s.description };
+                });
 
-                if (error) throw error;
+                const formattedReports = (evalResult.data || []).map((item) => {
+                    const reportJson = typeof item.report_json === "string"
+                        ? JSON.parse(item.report_json)
+                        : (item.report_json || {});
 
-                const formattedReports = (data || []).map((item) => {
-                    const reportJson = item.report_json || {};
+                    const startupInfo = nameMap[item.startup_id];
+
                     let title =
+                        startupInfo?.name ||
                         reportJson.startup_name ||
-                        item.startup_id ||
                         "Unknown Startup";
-                    let description = "No summary available.";
+                    let description = startupInfo?.description || "No summary available.";
 
                     const summary = reportJson.summary;
                     if (typeof summary === "string") {

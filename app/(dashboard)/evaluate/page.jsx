@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import Link from "next/link";
 
 export default function EvaluatePage() {
-    const { user } = useAuth();
+    const { user, session } = useAuth();
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [result, setResult] = React.useState(null);
     const [error, setError] = React.useState(null);
@@ -20,7 +20,10 @@ export default function EvaluatePage() {
         try {
             const response = await fetch("/api/py/evaluate", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${session?.access_token || ""}`,
+                },
                 body: JSON.stringify({
                     ...data,
                     user_id: user?.id || null,
@@ -81,6 +84,26 @@ export default function EvaluatePage() {
                         </Button>
                     </div>
 
+                    {/* Persistence Warning */}
+                    {
+                        result._persistence && !result._persistence.saved && (
+                            <div className="mt-6 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-sm text-left">
+                                <strong className="flex items-center gap-2">
+                                    <span className="text-lg">⚠️</span> Warning: Report Not Saved
+                                </strong>
+                                <p className="mt-1 opacity-90">
+                                    This evaluation was generated successfully but could not be saved to the database.
+                                    You won't be able to access this report later.
+                                </p>
+                                {result._persistence.dry_run && (
+                                    <p className="mt-1 text-xs opacity-70">
+                                        (Reason: Backend running in dry-run mode / missing Supabase credentials)
+                                    </p>
+                                )}
+                            </div>
+                        )
+                    }
+
                     {/* collapsible raw JSON */}
                     <details className="mt-10 text-left">
                         <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground transition-colors">
@@ -90,8 +113,8 @@ export default function EvaluatePage() {
                             {JSON.stringify(result, null, 2)}
                         </pre>
                     </details>
-                </motion.div>
-            </div>
+                </motion.div >
+            </div >
         );
     }
 

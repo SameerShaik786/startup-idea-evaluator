@@ -48,9 +48,15 @@ No explanation text outside JSON.
 Return EXACTLY this structure:
 
 {
- "top_risks": string[],
- "risk_severity_score": number,
- "executive_risk_summary": string,
+ "risks": [
+    {
+       "category": string,    // e.g., "Financial", "Market", "Execution"
+       "description": string, // One sentence description
+       "severity": string     // "High", "Medium", "Low"
+    }
+ ],
+ "score": number,         // Safety Score (0-100). Higher is Safer. (Inverse of risk)
+ "mitigation": string,    // Detailed mitigation strategy and roadmap
  "confidence_score": number
 }
 

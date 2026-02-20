@@ -42,6 +42,8 @@ const STAGES = [
 
 const CURRENCIES = ["USD", "EUR", "GBP", "INR", "CAD", "AUD"];
 
+import { MagicFill } from "./magic-fill"; // Import MagicFill component
+
 // ─── Form State ───────────────────────────────────────────
 
 const initialFormData = {
@@ -380,6 +382,17 @@ export function EvaluationForm({ onSubmit }) {
         }
     };
 
+    const handleMagicFill = (extractedData) => {
+        setFormData(prev => ({
+            ...prev,
+            ...extractedData,
+            // Ensure numeric fields are preserved if not extracted
+            // (The extraction service skips metrics, so we keep defaults or existing)
+        }));
+        // Move to Step 1 to show the magic
+        setCurrentStep(1);
+    };
+
     // ─── Render ───────────────────────────────────────────
 
     return (
@@ -388,12 +401,15 @@ export function EvaluationForm({ onSubmit }) {
             <div className="space-y-6">
                 {/* Progress */}
                 <Card className="border-border" style={{ backgroundColor: 'transparent' }}>
-                    <CardContent className="py-6">
+                    <CardContent className="py-6 flex justify-between items-center bg-card/50">
                         <StepProgress
                             currentStep={currentStep}
                             completedSteps={completedSteps}
                             onStepClick={setCurrentStep}
                         />
+                        <div className="ml-4">
+                            <MagicFill onFill={handleMagicFill} />
+                        </div>
                     </CardContent>
                 </Card>
 

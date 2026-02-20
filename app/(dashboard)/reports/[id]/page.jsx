@@ -28,7 +28,9 @@ export default function ReportPage({ params }) {
                 .from("startup_evaluations")
                 .select("*")
                 .eq("startup_id", id)
-                .single();
+                .order("created_at", { ascending: false })
+                .limit(1)
+                .maybeSingle();
 
             console.log("Fetch result:", { data, error });
 

@@ -164,25 +164,28 @@ export default function DiscoverPage() {
             try {
                 const supabase = createClient();
 
-                // Fetch all startups
-                const { data, error } = await supabase
+                // Run both queries in parallel — only select columns needed for cards
+                const startupsQuery = supabase
                     .from("startups")
-                    .select("*")
+                    .select("id, name, tagline, stage, sector, website, logo_url, raise_amount, trending, created_at")
                     .order("created_at", { ascending: false });
+
+                const interestsQuery =
+                    isInvestor && user?.id
+                        ? supabase
+                            .from("investor_interests")
+                            .select("startup_id")
+                            .eq("user_id", user.id)
+                        : Promise.resolve({ data: null });
+
+                const [{ data, error }, { data: interestData }] =
+                    await Promise.all([startupsQuery, interestsQuery]);
 
                 if (error) throw error;
                 setStartups(data || []);
 
-                // If investor, also fetch their interests
-                if (isInvestor && user?.id) {
-                    const { data: interestData } = await supabase
-                        .from("investor_interests")
-                        .select("startup_id")
-                        .eq("user_id", user.id);
-
-                    if (interestData) {
-                        setInterests(new Set(interestData.map((i) => i.startup_id)));
-                    }
+                if (interestData) {
+                    setInterests(new Set(interestData.map((i) => i.startup_id)));
                 }
             } catch (err) {
                 console.error("Error fetching startups:", err);

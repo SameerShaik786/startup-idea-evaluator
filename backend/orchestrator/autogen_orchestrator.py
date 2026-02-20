@@ -95,46 +95,42 @@ class AutoGenEvaluationOrchestrator:
         agent_outputs["market"] = market_output
         agent_outputs["competition"] = competition_output
 
-        # ── Step 3: Risk Agent (depends on Step 2) ────────────
-        risk_context = build_autogen_context(startup_context, {
+        # ── Step 3: Parallel Advanced Agents (Risk, Longevity, Investor) ──────
+        # Optimized: These now run in parallel, using only the base data.
+        # This trades off a bit of "coherence" (Investor seeing Risk output) for speed.
+        
+        # Risk Context
+        risk_ctx = build_autogen_context(startup_context, {
             "financial": financial_output,
             "market": market_output,
             "competition": competition_output,
         })
-        risk_output = await execute_autogen_agent(
-            self.agents["evaluator_risk"],
-            risk_context
-        )
-        agent_outputs["risk"] = risk_output
 
-        # ── Step 4: Longevity Agent (depends on Steps 1, 2, 3) ──
-        longevity_context = build_autogen_context(startup_context, {
+        # Longevity Context (Removed dependency on Risk)
+        longevity_ctx = build_autogen_context(startup_context, {
             "validator": validator_output,
             "financial": financial_output,
             "market": market_output,
             "competition": competition_output,
-            "risk": risk_output,
         })
-        longevity_output = await execute_autogen_agent(
-            self.agents["evaluator_longevity"],
-            longevity_context
-        )
-        agent_outputs["longevity"] = longevity_output
-
-        # ── Step 5: Investor Fit Agent (depends on ALL previous) ──
-        investor_context = build_autogen_context(startup_context, {
+        
+        # Investor Context (Removed dependency on Risk/Longevity)
+        investor_ctx = build_autogen_context(startup_context, {
             "validator": validator_output,
             "financial": financial_output,
             "market": market_output,
             "competition": competition_output,
-            "risk": risk_output,
-            "longevity": longevity_output,
         })
-        investor_output = await execute_autogen_agent(
-            self.agents["evaluator_investor_fit"],
-            investor_context
-        )
-        agent_outputs["investor_fit"] = investor_output
+
+        advanced_results = await run_autogen_parallel([
+            execute_autogen_agent(self.agents["evaluator_risk"], risk_ctx),
+            execute_autogen_agent(self.agents["evaluator_longevity"], longevity_ctx),
+            execute_autogen_agent(self.agents["evaluator_investor_fit"], investor_ctx),
+        ])
+
+        agent_outputs["risk"] = advanced_results[0]
+        agent_outputs["longevity"] = advanced_results[1]
+        agent_outputs["investor_fit"] = advanced_results[2]
 
         # ── Aggregate ─────────────────────────────────────────
         return build_orchestration_result(agent_outputs, started_at)

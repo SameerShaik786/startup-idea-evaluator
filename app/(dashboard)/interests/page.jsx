@@ -156,7 +156,7 @@ export default function InterestsPage() {
             const startupIds = interestData.map((i) => i.startup_id);
             const { data: startupData, error: startupError } = await supabase
                 .from("startups")
-                .select("*")
+                .select("id, name, tagline, stage, sector, logo_url, raise_amount, created_at")
                 .in("id", startupIds);
 
             if (startupError) throw startupError;

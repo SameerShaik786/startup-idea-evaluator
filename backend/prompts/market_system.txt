@@ -56,11 +56,12 @@ No explanations outside JSON.
 Return EXACTLY this structure:
 
 {
- "tam_estimate": number,
- "sam_estimate": number,
- "som_estimate": number,
- "market_growth_score": number,
+ "tam": number,           // Total Addressable Market in $ (e.g. 1000000000)
+ "sam": number,           // Serviceable Available Market in $
+ "som": number,           // Serviceable Obtainable Market in $
+ "growth_rate": string,   // e.g. "15% CAGR"
  "market_trends": string[],
+ "reasoning": string,     // Detailed text explaining the sizing logic and strategic reasoning
  "confidence_score": number
 }
 
