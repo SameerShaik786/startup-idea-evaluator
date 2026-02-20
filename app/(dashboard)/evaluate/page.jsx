@@ -2,12 +2,30 @@
 
 import * as React from "react";
 import { motion } from "framer-motion";
-import { FileText, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EvaluationForm } from "@/components/evaluate/evaluation-form";
 import { AgentProgressPanel } from "@/components/evaluate/AgentProgressPanel";
 import { useAuth } from "@/lib/auth-context";
 import Link from "next/link";
+
+// Simulated agent pipeline timing (ms delays from start)
+const AGENT_TIMELINE = [
+    { agent: "validator", runAt: 0, completeAt: 3000 },
+    { agent: "financial", runAt: 3200, completeAt: null },
+    { agent: "market", runAt: 3200, completeAt: null },
+    { agent: "competition", runAt: 3200, completeAt: null },
+    { agent: "financial", runAt: null, completeAt: 12000 },
+    { agent: "market", runAt: null, completeAt: 13000 },
+    { agent: "competition", runAt: null, completeAt: 14000 },
+    { agent: "risk", runAt: 14500, completeAt: null },
+    { agent: "longevity", runAt: 14500, completeAt: null },
+    { agent: "investor_fit", runAt: 14500, completeAt: null },
+    { agent: "risk", runAt: null, completeAt: 24000 },
+    { agent: "longevity", runAt: null, completeAt: 25000 },
+    { agent: "investor_fit", runAt: null, completeAt: 26000 },
+    { agent: "scoring", runAt: 26500, completeAt: null },
+];
 
 export default function EvaluatePage() {
     const { user, session } = useAuth();
@@ -15,14 +33,45 @@ export default function EvaluatePage() {
     const [result, setResult] = React.useState(null);
     const [error, setError] = React.useState(null);
     const [agentStatuses, setAgentStatuses] = React.useState({});
+    const timersRef = React.useRef([]);
+
+    // Start simulated progress animation
+    const startSimulatedProgress = React.useCallback(() => {
+        // Clear any previous timers
+        timersRef.current.forEach(clearTimeout);
+        timersRef.current = [];
+
+        AGENT_TIMELINE.forEach((event) => {
+            if (event.runAt !== null) {
+                const t = setTimeout(() => {
+                    setAgentStatuses((prev) => ({ ...prev, [event.agent]: "running" }));
+                }, event.runAt);
+                timersRef.current.push(t);
+            }
+            if (event.completeAt !== null) {
+                const t = setTimeout(() => {
+                    setAgentStatuses((prev) => ({ ...prev, [event.agent]: "completed" }));
+                }, event.completeAt);
+                timersRef.current.push(t);
+            }
+        });
+    }, []);
+
+    // Cleanup timers on unmount
+    React.useEffect(() => {
+        return () => timersRef.current.forEach(clearTimeout);
+    }, []);
 
     const handleSubmit = async (data) => {
         setIsSubmitting(true);
         setError(null);
         setAgentStatuses({});
 
+        // Start simulated progress immediately
+        startSimulatedProgress();
+
         try {
-            const response = await fetch("/api/py/evaluate-stream", {
+            const response = await fetch("/api/py/evaluate", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -41,63 +90,29 @@ export default function EvaluatePage() {
                 );
             }
 
-            // Parse SSE stream
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = "";
+            const resultData = await response.json();
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
+            // Mark all agents as completed and scoring done
+            setAgentStatuses({
+                validator: "completed",
+                financial: "completed",
+                market: "completed",
+                competition: "completed",
+                risk: "completed",
+                longevity: "completed",
+                investor_fit: "completed",
+                scoring: "completed",
+            });
 
-                buffer += decoder.decode(value, { stream: true });
-
-                // Process complete SSE events (separated by double newlines)
-                const events = buffer.split("\n\n");
-                buffer = events.pop(); // Keep incomplete event in buffer
-
-                for (const eventStr of events) {
-                    if (!eventStr.trim()) continue;
-
-                    const lines = eventStr.split("\n");
-                    let eventType = "";
-                    let eventData = "";
-
-                    for (const line of lines) {
-                        if (line.startsWith("event: ")) {
-                            eventType = line.slice(7);
-                        } else if (line.startsWith("data: ")) {
-                            eventData = line.slice(6);
-                        }
-                    }
-
-                    if (!eventType || !eventData) continue;
-
-                    try {
-                        const parsed = JSON.parse(eventData);
-
-                        if (eventType === "progress") {
-                            setAgentStatuses((prev) => ({
-                                ...prev,
-                                [parsed.step]: parsed.status,
-                            }));
-                        } else if (eventType === "result") {
-                            setResult(parsed);
-                        } else if (eventType === "error") {
-                            throw new Error(parsed.detail || "Evaluation failed");
-                        }
-                    } catch (parseErr) {
-                        if (parseErr.message !== "Evaluation failed" && !parseErr.message.includes("failed")) {
-                            console.error("Failed to parse SSE event:", parseErr);
-                        } else {
-                            throw parseErr;
-                        }
-                    }
-                }
-            }
+            // Brief pause to show all-complete state
+            await new Promise((r) => setTimeout(r, 800));
+            setResult(resultData);
         } catch (err) {
             console.error(err);
             setError(err.message);
+            // Clear timers on error
+            timersRef.current.forEach(clearTimeout);
+            timersRef.current = [];
         } finally {
             setIsSubmitting(false);
         }
@@ -149,7 +164,7 @@ export default function EvaluatePage() {
                                 </strong>
                                 <p className="mt-1 opacity-90">
                                     This evaluation was generated successfully but could not be saved to the database.
-                                    You won't be able to access this report later.
+                                    You won&#39;t be able to access this report later.
                                 </p>
                                 {result._persistence.dry_run && (
                                     <p className="mt-1 text-xs opacity-70">
@@ -169,8 +184,8 @@ export default function EvaluatePage() {
                             {JSON.stringify(result, null, 2)}
                         </pre>
                     </details>
-                </motion.div >
-            </div >
+                </motion.div>
+            </div>
         );
     }
 
@@ -222,4 +237,3 @@ export default function EvaluatePage() {
         </div>
     );
 }
-
